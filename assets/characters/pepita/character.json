@@ -1,0 +1,606 @@
+{
+  "schemaVersion": 1,
+  "id": "pepita",
+  "displayName": "Pepita",
+  "role": "florist",
+  "frameWidth": 128,
+  "frameHeight": 128,
+  "defaultDirection": "down",
+  "visualReference": {
+    "status": "concept-only-not-included",
+    "description": "Cheerful chibi Dia de los Muertos skeleton florist with flower crown, braids, purple embroidered dress, brown shoes and flower basket.",
+    "palette": {
+      "outline": "#3b2146",
+      "cream": "#fff1d1",
+      "purple": "#733d91",
+      "pink": "#ed5791",
+      "orange": "#f39a3c",
+      "turquoise": "#47c4ba",
+      "brown": "#70422f",
+      "hair": "#2b2131"
+    },
+    "baselineY": 119,
+    "padding": 8,
+    "bakedShadow": false
+  },
+  "movement": {
+    "walkSpeed": 55,
+    "skipSpeed": 75
+  },
+  "anchors": {
+    "feet": [
+      64,
+      119
+    ],
+    "interaction": [
+      64,
+      126
+    ]
+  },
+  "collisionBox": {
+    "x": 42,
+    "y": 72,
+    "width": 44,
+    "height": 47
+  },
+  "states": [
+    "idle",
+    "walking",
+    "skipping",
+    "talking",
+    "dancing",
+    "performingAction",
+    "sitting",
+    "sleeping",
+    "falling",
+    "disabled"
+  ],
+  "statePriority": [
+    "disabled",
+    "falling",
+    "performingAction",
+    "talking",
+    "dancing",
+    "skipping",
+    "walking",
+    "sitting",
+    "sleeping",
+    "idle"
+  ],
+  "personality": {
+    "decisionIntervalMs": [
+      2000,
+      6000
+    ],
+    "autonomousBehaviours": [
+      {
+        "action": "idle",
+        "weight": 0.5
+      },
+      {
+        "action": "walk",
+        "weight": 0.25
+      },
+      {
+        "action": "skip",
+        "weight": 0.1
+      },
+      {
+        "action": "smell_flowers",
+        "weight": 0.05
+      },
+      {
+        "action": "arrange_bouquet",
+        "weight": 0.05
+      },
+      {
+        "action": "wave",
+        "weight": 0.05
+      }
+    ]
+  },
+  "interactionHooks": [
+    "playerTouch",
+    "flowers",
+    "flowerBeds",
+    "wateringCan",
+    "otherCharacters",
+    "xolo",
+    "festivalStage",
+    "benches",
+    "floristStall"
+  ],
+  "animations": {
+    "idle_down": {
+      "frames": 6,
+      "fps": 6,
+      "loop": true,
+      "paths": [
+        "idle/down/pepita_idle_down_00.png",
+        "idle/down/pepita_idle_down_01.png",
+        "idle/down/pepita_idle_down_02.png",
+        "idle/down/pepita_idle_down_03.png",
+        "idle/down/pepita_idle_down_04.png",
+        "idle/down/pepita_idle_down_05.png"
+      ]
+    },
+    "idle_left": {
+      "frames": 6,
+      "fps": 6,
+      "loop": true,
+      "paths": [
+        "idle/left/pepita_idle_left_00.png",
+        "idle/left/pepita_idle_left_01.png",
+        "idle/left/pepita_idle_left_02.png",
+        "idle/left/pepita_idle_left_03.png",
+        "idle/left/pepita_idle_left_04.png",
+        "idle/left/pepita_idle_left_05.png"
+      ]
+    },
+    "idle_right": {
+      "frames": 6,
+      "fps": 6,
+      "loop": true,
+      "paths": [
+        "idle/right/pepita_idle_right_00.png",
+        "idle/right/pepita_idle_right_01.png",
+        "idle/right/pepita_idle_right_02.png",
+        "idle/right/pepita_idle_right_03.png",
+        "idle/right/pepita_idle_right_04.png",
+        "idle/right/pepita_idle_right_05.png"
+      ]
+    },
+    "idle_up": {
+      "frames": 6,
+      "fps": 6,
+      "loop": true,
+      "paths": [
+        "idle/up/pepita_idle_up_00.png",
+        "idle/up/pepita_idle_up_01.png",
+        "idle/up/pepita_idle_up_02.png",
+        "idle/up/pepita_idle_up_03.png",
+        "idle/up/pepita_idle_up_04.png",
+        "idle/up/pepita_idle_up_05.png"
+      ]
+    },
+    "walk_down": {
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "paths": [
+        "walk/down/pepita_walk_down_00.png",
+        "walk/down/pepita_walk_down_01.png",
+        "walk/down/pepita_walk_down_02.png",
+        "walk/down/pepita_walk_down_03.png",
+        "walk/down/pepita_walk_down_04.png",
+        "walk/down/pepita_walk_down_05.png",
+        "walk/down/pepita_walk_down_06.png",
+        "walk/down/pepita_walk_down_07.png"
+      ]
+    },
+    "walk_left": {
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "paths": [
+        "walk/left/pepita_walk_left_00.png",
+        "walk/left/pepita_walk_left_01.png",
+        "walk/left/pepita_walk_left_02.png",
+        "walk/left/pepita_walk_left_03.png",
+        "walk/left/pepita_walk_left_04.png",
+        "walk/left/pepita_walk_left_05.png",
+        "walk/left/pepita_walk_left_06.png",
+        "walk/left/pepita_walk_left_07.png"
+      ]
+    },
+    "walk_right": {
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "paths": [
+        "walk/right/pepita_walk_right_00.png",
+        "walk/right/pepita_walk_right_01.png",
+        "walk/right/pepita_walk_right_02.png",
+        "walk/right/pepita_walk_right_03.png",
+        "walk/right/pepita_walk_right_04.png",
+        "walk/right/pepita_walk_right_05.png",
+        "walk/right/pepita_walk_right_06.png",
+        "walk/right/pepita_walk_right_07.png"
+      ]
+    },
+    "walk_up": {
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "paths": [
+        "walk/up/pepita_walk_up_00.png",
+        "walk/up/pepita_walk_up_01.png",
+        "walk/up/pepita_walk_up_02.png",
+        "walk/up/pepita_walk_up_03.png",
+        "walk/up/pepita_walk_up_04.png",
+        "walk/up/pepita_walk_up_05.png",
+        "walk/up/pepita_walk_up_06.png",
+        "walk/up/pepita_walk_up_07.png"
+      ]
+    },
+    "skip_down": {
+      "frames": 8,
+      "fps": 12,
+      "loop": true,
+      "paths": [
+        "skip/down/pepita_skip_down_00.png",
+        "skip/down/pepita_skip_down_01.png",
+        "skip/down/pepita_skip_down_02.png",
+        "skip/down/pepita_skip_down_03.png",
+        "skip/down/pepita_skip_down_04.png",
+        "skip/down/pepita_skip_down_05.png",
+        "skip/down/pepita_skip_down_06.png",
+        "skip/down/pepita_skip_down_07.png"
+      ]
+    },
+    "skip_left": {
+      "frames": 8,
+      "fps": 12,
+      "loop": true,
+      "paths": [
+        "skip/left/pepita_skip_left_00.png",
+        "skip/left/pepita_skip_left_01.png",
+        "skip/left/pepita_skip_left_02.png",
+        "skip/left/pepita_skip_left_03.png",
+        "skip/left/pepita_skip_left_04.png",
+        "skip/left/pepita_skip_left_05.png",
+        "skip/left/pepita_skip_left_06.png",
+        "skip/left/pepita_skip_left_07.png"
+      ]
+    },
+    "skip_right": {
+      "frames": 8,
+      "fps": 12,
+      "loop": true,
+      "paths": [
+        "skip/right/pepita_skip_right_00.png",
+        "skip/right/pepita_skip_right_01.png",
+        "skip/right/pepita_skip_right_02.png",
+        "skip/right/pepita_skip_right_03.png",
+        "skip/right/pepita_skip_right_04.png",
+        "skip/right/pepita_skip_right_05.png",
+        "skip/right/pepita_skip_right_06.png",
+        "skip/right/pepita_skip_right_07.png"
+      ]
+    },
+    "skip_up": {
+      "frames": 8,
+      "fps": 12,
+      "loop": true,
+      "paths": [
+        "skip/up/pepita_skip_up_00.png",
+        "skip/up/pepita_skip_up_01.png",
+        "skip/up/pepita_skip_up_02.png",
+        "skip/up/pepita_skip_up_03.png",
+        "skip/up/pepita_skip_up_04.png",
+        "skip/up/pepita_skip_up_05.png",
+        "skip/up/pepita_skip_up_06.png",
+        "skip/up/pepita_skip_up_07.png"
+      ]
+    },
+    "talk_down": {
+      "frames": 6,
+      "fps": 8,
+      "loop": true,
+      "paths": [
+        "talk/down/pepita_talk_down_00.png",
+        "talk/down/pepita_talk_down_01.png",
+        "talk/down/pepita_talk_down_02.png",
+        "talk/down/pepita_talk_down_03.png",
+        "talk/down/pepita_talk_down_04.png",
+        "talk/down/pepita_talk_down_05.png"
+      ]
+    },
+    "talk_left": {
+      "frames": 6,
+      "fps": 8,
+      "loop": true,
+      "paths": [
+        "talk/left/pepita_talk_left_00.png",
+        "talk/left/pepita_talk_left_01.png",
+        "talk/left/pepita_talk_left_02.png",
+        "talk/left/pepita_talk_left_03.png",
+        "talk/left/pepita_talk_left_04.png",
+        "talk/left/pepita_talk_left_05.png"
+      ]
+    },
+    "talk_right": {
+      "frames": 6,
+      "fps": 8,
+      "loop": true,
+      "paths": [
+        "talk/right/pepita_talk_right_00.png",
+        "talk/right/pepita_talk_right_01.png",
+        "talk/right/pepita_talk_right_02.png",
+        "talk/right/pepita_talk_right_03.png",
+        "talk/right/pepita_talk_right_04.png",
+        "talk/right/pepita_talk_right_05.png"
+      ]
+    },
+    "talk_up": {
+      "frames": 6,
+      "fps": 8,
+      "loop": true,
+      "paths": [
+        "talk/up/pepita_talk_up_00.png",
+        "talk/up/pepita_talk_up_01.png",
+        "talk/up/pepita_talk_up_02.png",
+        "talk/up/pepita_talk_up_03.png",
+        "talk/up/pepita_talk_up_04.png",
+        "talk/up/pepita_talk_up_05.png"
+      ]
+    },
+    "dance_down": {
+      "frames": 12,
+      "fps": 12,
+      "loop": true,
+      "paths": [
+        "dance/down/pepita_dance_down_00.png",
+        "dance/down/pepita_dance_down_01.png",
+        "dance/down/pepita_dance_down_02.png",
+        "dance/down/pepita_dance_down_03.png",
+        "dance/down/pepita_dance_down_04.png",
+        "dance/down/pepita_dance_down_05.png",
+        "dance/down/pepita_dance_down_06.png",
+        "dance/down/pepita_dance_down_07.png",
+        "dance/down/pepita_dance_down_08.png",
+        "dance/down/pepita_dance_down_09.png",
+        "dance/down/pepita_dance_down_10.png",
+        "dance/down/pepita_dance_down_11.png"
+      ]
+    },
+    "expression_happy": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/happy/pepita_happy_00.png"
+      ]
+    },
+    "expression_excited": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/excited/pepita_excited_00.png"
+      ]
+    },
+    "expression_sad": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/sad/pepita_sad_00.png"
+      ]
+    },
+    "expression_angry": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/angry/pepita_angry_00.png"
+      ]
+    },
+    "expression_scared": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/scared/pepita_scared_00.png"
+      ]
+    },
+    "expression_surprised": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/surprised/pepita_surprised_00.png"
+      ]
+    },
+    "expression_confused": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/confused/pepita_confused_00.png"
+      ]
+    },
+    "expression_love": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/love/pepita_love_00.png"
+      ]
+    },
+    "expression_laughing": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/laughing/pepita_laughing_00.png"
+      ]
+    },
+    "expression_sleepy": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "paths": [
+        "expressions/sleepy/pepita_sleepy_00.png"
+      ]
+    },
+    "wave": {
+      "frames": 6,
+      "fps": 10,
+      "loop": false,
+      "paths": [
+        "actions/wave/pepita_wave_00.png",
+        "actions/wave/pepita_wave_01.png",
+        "actions/wave/pepita_wave_02.png",
+        "actions/wave/pepita_wave_03.png",
+        "actions/wave/pepita_wave_04.png",
+        "actions/wave/pepita_wave_05.png"
+      ]
+    },
+    "clap": {
+      "frames": 6,
+      "fps": 10,
+      "loop": false,
+      "paths": [
+        "actions/clap/pepita_clap_00.png",
+        "actions/clap/pepita_clap_01.png",
+        "actions/clap/pepita_clap_02.png",
+        "actions/clap/pepita_clap_03.png",
+        "actions/clap/pepita_clap_04.png",
+        "actions/clap/pepita_clap_05.png"
+      ]
+    },
+    "smell_flowers": {
+      "frames": 8,
+      "fps": 10,
+      "loop": false,
+      "paths": [
+        "actions/smell_flowers/pepita_smell_flowers_00.png",
+        "actions/smell_flowers/pepita_smell_flowers_01.png",
+        "actions/smell_flowers/pepita_smell_flowers_02.png",
+        "actions/smell_flowers/pepita_smell_flowers_03.png",
+        "actions/smell_flowers/pepita_smell_flowers_04.png",
+        "actions/smell_flowers/pepita_smell_flowers_05.png",
+        "actions/smell_flowers/pepita_smell_flowers_06.png",
+        "actions/smell_flowers/pepita_smell_flowers_07.png"
+      ]
+    },
+    "arrange_bouquet": {
+      "frames": 10,
+      "fps": 10,
+      "loop": false,
+      "paths": [
+        "actions/arrange_bouquet/pepita_arrange_bouquet_00.png",
+        "actions/arrange_bouquet/pepita_arrange_bouquet_01.png",
+        "actions/arrange_bouquet/pepita_arrange_bouquet_02.png",
+        "actions/arrange_bouquet/pepita_arrange_bouquet_03.png",
+        "actions/arrange_bouquet/pepita_arrange_bouquet_04.png",
+        "actions/arrange_bouquet/pepita_arrange_bouquet_05.png",
+        "actions/arrange_bouquet/pepita_arrange_bouquet_06.png",
+        "actions/arrange_bouquet/pepita_arrange_bouquet_07.png",
+        "actions/arrange_bouquet/pepita_arrange_bouquet_08.png",
+        "actions/arrange_bouquet/pepita_arrange_bouquet_09.png"
+      ]
+    },
+    "throw_petals": {
+      "frames": 8,
+      "fps": 12,
+      "loop": false,
+      "paths": [
+        "actions/throw_petals/pepita_throw_petals_00.png",
+        "actions/throw_petals/pepita_throw_petals_01.png",
+        "actions/throw_petals/pepita_throw_petals_02.png",
+        "actions/throw_petals/pepita_throw_petals_03.png",
+        "actions/throw_petals/pepita_throw_petals_04.png",
+        "actions/throw_petals/pepita_throw_petals_05.png",
+        "actions/throw_petals/pepita_throw_petals_06.png",
+        "actions/throw_petals/pepita_throw_petals_07.png"
+      ],
+      "events": {
+        "4": "spawn_petals"
+      }
+    },
+    "water_flowers": {
+      "frames": 10,
+      "fps": 10,
+      "loop": false,
+      "paths": [
+        "actions/water_flowers/pepita_water_flowers_00.png",
+        "actions/water_flowers/pepita_water_flowers_01.png",
+        "actions/water_flowers/pepita_water_flowers_02.png",
+        "actions/water_flowers/pepita_water_flowers_03.png",
+        "actions/water_flowers/pepita_water_flowers_04.png",
+        "actions/water_flowers/pepita_water_flowers_05.png",
+        "actions/water_flowers/pepita_water_flowers_06.png",
+        "actions/water_flowers/pepita_water_flowers_07.png",
+        "actions/water_flowers/pepita_water_flowers_08.png",
+        "actions/water_flowers/pepita_water_flowers_09.png"
+      ],
+      "events": {
+        "4": "spawn_water"
+      }
+    },
+    "give_flower": {
+      "frames": 8,
+      "fps": 10,
+      "loop": false,
+      "paths": [
+        "actions/give_flower/pepita_give_flower_00.png",
+        "actions/give_flower/pepita_give_flower_01.png",
+        "actions/give_flower/pepita_give_flower_02.png",
+        "actions/give_flower/pepita_give_flower_03.png",
+        "actions/give_flower/pepita_give_flower_04.png",
+        "actions/give_flower/pepita_give_flower_05.png",
+        "actions/give_flower/pepita_give_flower_06.png",
+        "actions/give_flower/pepita_give_flower_07.png"
+      ],
+      "events": {
+        "4": "transfer_flower"
+      }
+    },
+    "sit": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false,
+      "paths": [
+        "actions/sit/pepita_sit_00.png",
+        "actions/sit/pepita_sit_01.png",
+        "actions/sit/pepita_sit_02.png",
+        "actions/sit/pepita_sit_03.png"
+      ]
+    },
+    "sleep": {
+      "frames": 6,
+      "fps": 4,
+      "loop": false,
+      "paths": [
+        "actions/sleep/pepita_sleep_00.png",
+        "actions/sleep/pepita_sleep_01.png",
+        "actions/sleep/pepita_sleep_02.png",
+        "actions/sleep/pepita_sleep_03.png",
+        "actions/sleep/pepita_sleep_04.png",
+        "actions/sleep/pepita_sleep_05.png"
+      ]
+    },
+    "fall": {
+      "frames": 6,
+      "fps": 10,
+      "loop": false,
+      "paths": [
+        "actions/fall/pepita_fall_00.png",
+        "actions/fall/pepita_fall_01.png",
+        "actions/fall/pepita_fall_02.png",
+        "actions/fall/pepita_fall_03.png",
+        "actions/fall/pepita_fall_04.png",
+        "actions/fall/pepita_fall_05.png"
+      ]
+    },
+    "celebrate": {
+      "frames": 10,
+      "fps": 12,
+      "loop": false,
+      "paths": [
+        "actions/celebrate/pepita_celebrate_00.png",
+        "actions/celebrate/pepita_celebrate_01.png",
+        "actions/celebrate/pepita_celebrate_02.png",
+        "actions/celebrate/pepita_celebrate_03.png",
+        "actions/celebrate/pepita_celebrate_04.png",
+        "actions/celebrate/pepita_celebrate_05.png",
+        "actions/celebrate/pepita_celebrate_06.png",
+        "actions/celebrate/pepita_celebrate_07.png",
+        "actions/celebrate/pepita_celebrate_08.png",
+        "actions/celebrate/pepita_celebrate_09.png"
+      ]
+    }
+  }
+}

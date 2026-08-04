@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spirit Village — Pepita Animation Lab</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="game-column">
+        <header>
+          <p class="eyebrow">Dead of the Dead · Phase 1</p>
+          <h1>Spirit Village</h1>
+          <p>Pepita is testing her new animation system. Tap her to say hello.</p>
+        </header>
+        <div id="village" class="village" aria-label="Spirit Village test area">
+          <div class="moon"></div>
+          <div class="papel papel-one"></div><div class="papel papel-two"></div><div class="papel papel-three"></div>
+          <div class="house"><span>Floristería</span></div>
+          <div class="flower-bed"></div>
+          <div class="fountain"></div>
+          <button id="resident" class="resident" aria-label="Tap Pepita">
+            <img id="resident-sprite" alt="Pepita placeholder sprite" draggable="false" />
+          </button>
+          <div id="speech" class="speech" role="status"></div>
+        </div>
+      </section>
+      <aside id="debug-viewer" class="debug-panel"></aside>
+    </main>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
