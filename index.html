@@ -12,7 +12,7 @@
         <header>
           <p class="eyebrow">Dead of the Dead · Phase 1</p>
           <h1>Spirit Village</h1>
-          <p>Pepita is testing her new animation system. Tap her to say hello.</p>
+          <p>Pepita and Miguelito are testing the multi-resident village. Tap either one to say hello, or wait and watch them run into each other.</p>
         </header>
         <div id="village" class="village" aria-label="Spirit Village test area">
           <div class="moon"></div>
@@ -20,11 +20,16 @@
           <div class="house"><span>Floristería</span></div>
           <button id="flower-bed" class="flower-bed" data-state="dry" aria-label="Dry flower bed, tap to water"></button>
           <div class="fountain"></div>
-          <button id="resident" class="resident" aria-label="Tap Pepita">
-            <img id="resident-sprite" alt="Pepita placeholder sprite" draggable="false" />
-            <span id="resident-expression" class="expression-icon"></span>
+          <button id="resident-pepita" class="resident" aria-label="Tap Pepita">
+            <img id="resident-pepita-sprite" alt="Pepita sprite" draggable="false" />
+            <span id="resident-pepita-expression" class="expression-icon"></span>
           </button>
-          <div id="speech" class="speech" role="status"></div>
+          <div id="speech-pepita" class="speech" role="status"></div>
+          <button id="resident-miguelito" class="resident" aria-label="Tap Miguelito">
+            <img id="resident-miguelito-sprite" alt="Miguelito placeholder sprite" draggable="false" />
+            <span id="resident-miguelito-expression" class="expression-icon"></span>
+          </button>
+          <div id="speech-miguelito" class="speech" role="status"></div>
         </div>
       </section>
       <aside id="debug-viewer" class="debug-panel"></aside>

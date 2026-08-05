@@ -1,8 +1,218 @@
 {
+  "schemaVersion": 1,
   "id": "miguelito",
   "displayName": "Miguelito",
   "role": "mischievous kid",
-  "kind": "humanoid",
-  "status": "planned",
-  "note": "Reuses Pepita's Phase 1 animation/state/behaviour/navigation/interaction controllers. Needs its own sprite set and character.json animation manifest before it can be added to the village."
+  "frameWidth": 128,
+  "frameHeight": 128,
+  "defaultDirection": "down",
+  "visualReference": {
+    "status": "placeholder-only",
+    "description": "Proof-of-concept second resident for the multi-resident village framework. Blue hoodie, purple beanie. Not final art.",
+    "palette": {
+      "outline": "#1c2340",
+      "skin": "#f0dcc0",
+      "hoodie": "#2f5fb0",
+      "hoodie_dark": "#1e3f80",
+      "beanie": "#8a3fc9",
+      "shoe": "#4a3222"
+    },
+    "baselineY": 119,
+    "padding": 8,
+    "bakedShadow": false
+  },
+  "movement": {
+    "walkSpeed": 62,
+    "skipSpeed": 80
+  },
+  "anchors": {
+    "feet": [
+      64,
+      119
+    ],
+    "interaction": [
+      64,
+      126
+    ]
+  },
+  "collisionBox": {
+    "x": 42,
+    "y": 72,
+    "width": 44,
+    "height": 47
+  },
+  "states": [
+    "idle",
+    "walking",
+    "skipping",
+    "talking",
+    "dancing",
+    "performingAction",
+    "sitting",
+    "sleeping",
+    "falling",
+    "disabled"
+  ],
+  "statePriority": [
+    "disabled",
+    "falling",
+    "performingAction",
+    "talking",
+    "dancing",
+    "skipping",
+    "walking",
+    "sitting",
+    "sleeping",
+    "idle"
+  ],
+  "personality": {
+    "decisionIntervalMs": [
+      2000,
+      6000
+    ],
+    "autonomousBehaviours": [
+      {
+        "action": "idle",
+        "weight": 0.55
+      },
+      {
+        "action": "walk",
+        "weight": 0.45
+      }
+    ]
+  },
+  "interactionHooks": [
+    "playerTouch",
+    "otherCharacters"
+  ],
+  "animations": {
+    "idle_down": {
+      "frames": 1,
+      "fps": 1,
+      "loop": true,
+      "paths": [
+        "idle/down/miguelito_idle_down_00.png"
+      ]
+    },
+    "idle_left": {
+      "frames": 1,
+      "fps": 1,
+      "loop": true,
+      "paths": [
+        "idle/left/miguelito_idle_left_00.png"
+      ]
+    },
+    "idle_right": {
+      "frames": 1,
+      "fps": 1,
+      "loop": true,
+      "paths": [
+        "idle/right/miguelito_idle_right_00.png"
+      ]
+    },
+    "idle_up": {
+      "frames": 1,
+      "fps": 1,
+      "loop": true,
+      "paths": [
+        "idle/up/miguelito_idle_up_00.png"
+      ]
+    },
+    "walk_down": {
+      "frames": 6,
+      "fps": 10,
+      "loop": true,
+      "paths": [
+        "walk/down/miguelito_walk_down_00.png",
+        "walk/down/miguelito_walk_down_01.png",
+        "walk/down/miguelito_walk_down_02.png",
+        "walk/down/miguelito_walk_down_03.png",
+        "walk/down/miguelito_walk_down_04.png",
+        "walk/down/miguelito_walk_down_05.png"
+      ]
+    },
+    "walk_left": {
+      "frames": 6,
+      "fps": 10,
+      "loop": true,
+      "paths": [
+        "walk/left/miguelito_walk_left_00.png",
+        "walk/left/miguelito_walk_left_01.png",
+        "walk/left/miguelito_walk_left_02.png",
+        "walk/left/miguelito_walk_left_03.png",
+        "walk/left/miguelito_walk_left_04.png",
+        "walk/left/miguelito_walk_left_05.png"
+      ]
+    },
+    "walk_right": {
+      "frames": 6,
+      "fps": 10,
+      "loop": true,
+      "paths": [
+        "walk/right/miguelito_walk_right_00.png",
+        "walk/right/miguelito_walk_right_01.png",
+        "walk/right/miguelito_walk_right_02.png",
+        "walk/right/miguelito_walk_right_03.png",
+        "walk/right/miguelito_walk_right_04.png",
+        "walk/right/miguelito_walk_right_05.png"
+      ]
+    },
+    "walk_up": {
+      "frames": 6,
+      "fps": 10,
+      "loop": true,
+      "paths": [
+        "walk/up/miguelito_walk_up_00.png",
+        "walk/up/miguelito_walk_up_01.png",
+        "walk/up/miguelito_walk_up_02.png",
+        "walk/up/miguelito_walk_up_03.png",
+        "walk/up/miguelito_walk_up_04.png",
+        "walk/up/miguelito_walk_up_05.png"
+      ]
+    },
+    "talk_down": {
+      "frames": 4,
+      "fps": 8,
+      "loop": true,
+      "paths": [
+        "talk/down/miguelito_talk_down_00.png",
+        "talk/down/miguelito_talk_down_01.png",
+        "talk/down/miguelito_talk_down_02.png",
+        "talk/down/miguelito_talk_down_03.png"
+      ]
+    },
+    "talk_left": {
+      "frames": 4,
+      "fps": 8,
+      "loop": true,
+      "paths": [
+        "talk/left/miguelito_talk_left_00.png",
+        "talk/left/miguelito_talk_left_01.png",
+        "talk/left/miguelito_talk_left_02.png",
+        "talk/left/miguelito_talk_left_03.png"
+      ]
+    },
+    "talk_right": {
+      "frames": 4,
+      "fps": 8,
+      "loop": true,
+      "paths": [
+        "talk/right/miguelito_talk_right_00.png",
+        "talk/right/miguelito_talk_right_01.png",
+        "talk/right/miguelito_talk_right_02.png",
+        "talk/right/miguelito_talk_right_03.png"
+      ]
+    },
+    "talk_up": {
+      "frames": 4,
+      "fps": 8,
+      "loop": true,
+      "paths": [
+        "talk/up/miguelito_talk_up_00.png",
+        "talk/up/miguelito_talk_up_01.png",
+        "talk/up/miguelito_talk_up_02.png",
+        "talk/up/miguelito_talk_up_03.png"
+      ]
+    }
+  }
 }

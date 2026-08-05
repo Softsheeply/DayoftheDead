@@ -83,6 +83,6 @@ export class CharacterAnimationController extends EventTarget {
     }
   }
 
-  render() { this.image.src = `./assets/characters/pepita/${this.definition.paths[this.frame]}`; }
+  render() { this.image.src = `./assets/characters/${this.config.id}/${this.definition.paths[this.frame]}`; }
   emitChange() { this.dispatchEvent(new CustomEvent("change")); }
 }

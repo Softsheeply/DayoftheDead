@@ -1,34 +1,71 @@
 import { AnimatedResident } from "./resident.js";
 import { AnimationDebugViewer } from "./debug-viewer.js";
+import { Village } from "./village.js";
 
 function localBox(el, villageRect) {
   const rect = el.getBoundingClientRect();
   return { x: rect.left - villageRect.left, y: rect.top - villageRect.top, width: rect.width, height: rect.height };
 }
 
-const response = await fetch("./assets/characters/pepita/character.json");
-if (!response.ok) throw new Error("Pepita character data could not be loaded.");
-const config = await response.json();
-const village = document.querySelector("#village");
-const villageRect = village.getBoundingClientRect();
+async function loadCharacter(id) {
+  const response = await fetch(`./assets/characters/${id}/character.json`);
+  if (!response.ok) throw new Error(`${id} character data could not be loaded.`);
+  return response.json();
+}
+
+const [pepitaConfig, miguelitoConfig] = await Promise.all([
+  loadCharacter("pepita"),
+  loadCharacter("miguelito")
+]);
+
+const villageEl = document.querySelector("#village");
+const villageRect = villageEl.getBoundingClientRect();
 const houseBox = localBox(document.querySelector(".house"), villageRect);
 const fountainBox = localBox(document.querySelector(".fountain"), villageRect);
 const flowerBedEl = document.querySelector("#flower-bed");
 const flowerBedBox = localBox(flowerBedEl, villageRect);
 const flowerBedPoint = { x: flowerBedBox.x + flowerBedBox.width - 34, y: flowerBedBox.y + flowerBedBox.height + 22 };
+const bounds = { width: villageEl.clientWidth, height: villageEl.clientHeight };
+const obstacles = [houseBox, fountainBox];
 
-const resident = new AnimatedResident(
-  config,
-  document.querySelector("#resident"),
-  document.querySelector("#resident-sprite"),
-  document.querySelector("#speech"),
-  { width: village.clientWidth, height: village.clientHeight },
-  { obstacles: [houseBox, fountainBox], expressionIcon: document.querySelector("#resident-expression") }
+const village = new Village();
+
+const pepita = new AnimatedResident(
+  pepitaConfig,
+  document.querySelector("#resident-pepita"),
+  document.querySelector("#resident-pepita-sprite"),
+  document.querySelector("#speech-pepita"),
+  bounds,
+  {
+    obstacles,
+    expressionIcon: document.querySelector("#resident-pepita-expression"),
+    spawn: { x: bounds.width * 0.4, y: bounds.height * 0.6 }
+  }
 );
-new AnimationDebugViewer(document.querySelector("#debug-viewer"), resident);
 
-resident.events.addEventListener("spawn_petals", () => resident.showSpeech("Petals!"));
-resident.events.addEventListener("transfer_flower", () => resident.showSpeech("A flower for you."));
+const miguelito = new AnimatedResident(
+  miguelitoConfig,
+  document.querySelector("#resident-miguelito"),
+  document.querySelector("#resident-miguelito-sprite"),
+  document.querySelector("#speech-miguelito"),
+  bounds,
+  {
+    obstacles,
+    expressionIcon: document.querySelector("#resident-miguelito-expression"),
+    spawn: { x: bounds.width * 0.65, y: bounds.height * 0.68 }
+  }
+);
+
+village.register(pepita);
+village.register(miguelito);
+
+new AnimationDebugViewer(document.querySelector("#debug-viewer"), [pepita, miguelito]);
+
+// Dev convenience: inspect/drive the live village from the browser console.
+window.__village = { village, pepita, miguelito };
+
+pepita.events.addEventListener("spawn_petals", () => pepita.showSpeech("Petals!"));
+pepita.events.addEventListener("transfer_flower", () => pepita.showSpeech("A flower for you."));
 
 let dryTimer = null;
 function scheduleDryOut() {
@@ -36,7 +73,7 @@ function scheduleDryOut() {
   dryTimer = setTimeout(() => { flowerBedEl.dataset.state = "dry"; flowerBedEl.setAttribute("aria-label", "Dry flower bed, tap to water"); }, 20000);
 }
 
-resident.interactions.register("flowerBed", {
+pepita.interactions.register("flowerBed", {
   point: flowerBedPoint,
   facing: "down",
   action: "water_flowers",
@@ -45,16 +82,16 @@ resident.interactions.register("flowerBed", {
   onComplete: () => {
     flowerBedEl.dataset.state = "watered";
     flowerBedEl.setAttribute("aria-label", "Watered flower bed");
-    resident.showSpeech("Flowers watered!");
+    pepita.showSpeech("Flowers watered!");
     scheduleDryOut();
   }
 });
 
-flowerBedEl.addEventListener("click", () => resident.interactions.request("flowerBed"));
+flowerBedEl.addEventListener("click", () => pepita.interactions.request("flowerBed"));
 
 let previous = performance.now();
 function loop(now) {
-  resident.update(Math.min(now - previous, 100));
+  village.update(Math.min(now - previous, 100));
   previous = now;
   requestAnimationFrame(loop);
 }

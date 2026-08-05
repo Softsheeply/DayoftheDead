@@ -1,6 +1,6 @@
 # Spirit Village — Pepita Phase 1
 
-This repository contains the first reusable resident-animation foundation for **Dead of the Dead / Spirit Village**. Pepita the florist is the only resident implemented so far.
+This repository contains the first reusable resident-animation foundation for **Dead of the Dead / Spirit Village**. Pepita the florist is the first fully-art'd resident. Miguelito exists as a deliberately minimal placeholder second resident (`scripts/generate-miguelito-placeholders.py`), used to prove the multi-resident framework actually generalizes beyond a single hardcoded character — not a real character yet.
 
 See [`docs/GAME_OVERVIEW.md`](docs/GAME_OVERVIEW.md) for the full game vision — the planned roster, world interactions, decorations, and UI — and how the current code maps onto it. The rest of the roster has scaffolded (art-less) folders under `assets/characters/` so future work has a home.
 
@@ -35,12 +35,18 @@ The village background (`assets/backgrounds/village_day.jpg`) is real illustrate
 - `src/navigation.js` — obstacle-avoiding random point selection and nav-area bounds
 - `src/interaction.js` — object interaction registry (approach → face → act → complete)
 - `src/expression.js` — timed expression icon overlay
-- `src/resident.js` — reusable resident composition, movement, and interactions
-- `src/debug-viewer.js` — animation inspection controls
-- `scripts/generate-placeholders.py` — deterministic placeholder generator
+- `src/village.js` — manages the list of residents in the scene and finds a nearby idle resident to talk to
+- `src/resident.js` — reusable resident composition, movement, interactions, and resident-to-resident conversation
+- `src/debug-viewer.js` — animation inspection controls, with a character switcher for multi-resident scenes
+- `scripts/generate-placeholders.py` — deterministic Pepita placeholder generator
+- `scripts/generate-miguelito-placeholders.py` — deterministic Miguelito placeholder generator
 
-Future humanoid residents can reuse these controllers by supplying a compatible character manifest and sprite set.
+Any humanoid resident can reuse these controllers by supplying a compatible character manifest and sprite set — `character.json`'s `animations` map drives everything, including which actions/expressions exist. Residents without a given animation (e.g. Miguelito has no `wave`) fall back gracefully instead of throwing.
 
 ## Interactive objects
 
 - **Flower bed** — starts dry; tap it (or Pepita will autonomously notice ~12%/1.5s while idle) to trigger the full spec interaction chain: walk to the interaction point → face the bed → play `water_flowers` → mark it watered (visual glow) → play `celebrate` → return to idle. It dries out again after 20s.
+
+## Multi-resident: talking to each other
+
+Any two residents that both have a `talk_down` animation can talk to each other: `resident.talkTo(otherResident)` walks the initiator to a standoff point near the other, has both face each other, plays `talk_<direction>` on both, shows a speech bubble on both, and returns both to idle after ~2.6s. Idle residents periodically (~10%/1.8s) check `village.findConversationPartner()` for a nearby idle resident and start a conversation on their own — this is what makes Pepita and Miguelito occasionally walk over and chat without the player doing anything. `window.__village` is exposed in the browser console (`{ village, pepita, miguelito }`) for manually poking at this — e.g. `window.__village.pepita.talkTo(window.__village.miguelito)`.

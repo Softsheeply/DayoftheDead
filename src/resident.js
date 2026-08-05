@@ -5,6 +5,9 @@ import { CharacterNavigationController } from "./navigation.js";
 import { CharacterInteractionController } from "./interaction.js";
 import { CharacterExpressionController } from "./expression.js";
 
+const CONVERSATION_DURATION_MS = 2600;
+const CONVERSATION_STANDOFF = 62;
+
 export class AnimatedResident extends EventTarget {
   constructor(config, element, image, speech, bounds, options = {}) {
     super();
@@ -13,7 +16,7 @@ export class AnimatedResident extends EventTarget {
     this.speech = speech;
     this.expressionIcon = options.expressionIcon;
     this.bounds = bounds;
-    this.position = { x: bounds.width * 0.52, y: bounds.height * 0.62 };
+    this.position = options.spawn ?? { x: bounds.width * 0.52, y: bounds.height * 0.62 };
     this.target = null;
     this.direction = config.defaultDirection;
     this.stateMachine = new CharacterStateMachine();
@@ -25,7 +28,10 @@ export class AnimatedResident extends EventTarget {
     this.expressions = new CharacterExpressionController(this);
     this.busy = false;
     this.pendingInteraction = null;
+    this.conversation = null;
+    this.village = null;
     this.flowerBedNoticeElapsed = 0;
+    this.conversationNoticeElapsed = 0;
     this.element.addEventListener("click", () => this.onTap());
     this.animation.addEventListener("complete", () => this.finishAction());
     this.events.addEventListener("animationevent", event => this.dispatchEvent(new CustomEvent("animationevent", { detail: event.detail })));
@@ -34,7 +40,14 @@ export class AnimatedResident extends EventTarget {
 
   update(deltaMs) {
     this.animation.update(deltaMs);
-    if (!this.busy) this.checkFlowerBed(deltaMs);
+    if (this.conversation?.phase === "talking" && this.conversation.role === "initiator") {
+      this.conversation.timer -= deltaMs;
+      if (this.conversation.timer <= 0) this.endConversation();
+    }
+    if (!this.busy) {
+      this.checkFlowerBed(deltaMs);
+      this.checkConversation(deltaMs);
+    }
     this.behaviour.update(deltaMs);
     if (this.target) this.updateMovement(deltaMs);
   }
@@ -46,6 +59,83 @@ export class AnimatedResident extends EventTarget {
     this.flowerBedNoticeElapsed = 0;
     if (Math.random() < 0.12) this.interactions.request("flowerBed");
   }
+
+  // -- Talking to another resident -----------------------------------------
+
+  canBeTalkedTo() {
+    return !this.busy && !this.conversation;
+  }
+
+  checkConversation(deltaMs) {
+    if (!this.village || !this.config.animations.talk_down) return;
+    this.conversationNoticeElapsed += deltaMs;
+    if (this.conversationNoticeElapsed < 1800) return;
+    this.conversationNoticeElapsed = 0;
+    if (Math.random() >= 0.1) return;
+    const partner = this.village.findConversationPartner(this);
+    if (partner) this.talkTo(partner);
+  }
+
+  talkTo(other) {
+    if (this.busy || this.conversation || other.busy || other.conversation) return;
+    if (!this.config.animations.talk_down || !other.config.animations?.talk_down) return;
+    this.behaviour.postpone(6000);
+    other.behaviour.postpone(6000);
+    const dx = other.position.x - this.position.x;
+    const dy = other.position.y - this.position.y;
+    const distance = Math.hypot(dx, dy) || 1;
+    this.conversation = { role: "initiator", other, phase: "approaching" };
+    other.conversation = { role: "partner", other: this, phase: "waiting" };
+    other.busy = true;
+    this.target = {
+      x: other.position.x - (dx / distance) * CONVERSATION_STANDOFF,
+      y: other.position.y - (dy / distance) * CONVERSATION_STANDOFF
+    };
+    this.movementKind = "walk";
+    this.busy = true;
+    this.stateMachine.transition("walking");
+    this.updateDirection();
+    this.animation.play(`walk_${this.direction}`);
+  }
+
+  beginTalking() {
+    const other = this.conversation.other;
+    this.faceToward(other.position);
+    other.faceToward(this.position);
+    this.conversation.phase = "talking";
+    this.conversation.timer = CONVERSATION_DURATION_MS;
+    other.conversation.phase = "talking";
+    this.stateMachine.transition("talking", { lock: true });
+    other.stateMachine.transition("talking", { lock: true });
+    this.animation.play(`talk_${this.direction}`);
+    other.animation.play(`talk_${other.direction}`);
+    this.expressions.set("happy", { durationMs: CONVERSATION_DURATION_MS - 200 });
+    other.expressions.set("happy", { durationMs: CONVERSATION_DURATION_MS - 200 });
+    this.showSpeech(`¡Hola, ${other.config.displayName}!`);
+    other.showSpeech(`¡Hola, ${this.config.displayName}!`);
+  }
+
+  endConversation() {
+    const other = this.conversation?.other;
+    this.conversation = null;
+    this.busy = false;
+    this.stateMachine.unlock("idle");
+    this.setIdle();
+    if (other) {
+      other.conversation = null;
+      other.busy = false;
+      other.stateMachine.unlock("idle");
+      other.setIdle();
+    }
+  }
+
+  faceToward(point) {
+    const dx = point.x - this.position.x;
+    const dy = point.y - this.position.y;
+    this.direction = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down");
+  }
+
+  // -- Generic behaviour / movement / actions ------------------------------
 
   performBehaviour(action) {
     if (action === "idle") return this.setIdle();
@@ -93,6 +183,10 @@ export class AnimatedResident extends EventTarget {
         this.interactions.resolve(this.pendingInteraction.id);
         return;
       }
+      if (this.conversation?.phase === "approaching") {
+        this.beginTalking();
+        return;
+      }
       this.busy = false;
       this.setIdle();
       return;
@@ -105,11 +199,21 @@ export class AnimatedResident extends EventTarget {
   }
 
   playAction(action, { reaction = false, interactionId = null } = {}) {
+    const name = this.config.animations[action] ? action : `${action}_down`;
+    if (!this.config.animations[name]) {
+      // This resident doesn't have this action animation (e.g. a minimal
+      // placeholder character) -- show the reaction without changing pose
+      // instead of throwing.
+      if (reaction) {
+        this.expressions.set("happy");
+        this.showSpeech(`¡Hola! I'm ${this.config.displayName}.`);
+      }
+      return;
+    }
     this.target = null;
     this.busy = true;
     if (!interactionId) this.direction = "down";
     this.stateMachine.transition("performingAction", { lock: true });
-    const name = this.config.animations[action] ? action : `${action}_down`;
     this.animation.play(name);
     if (reaction) {
       this.element.classList.add("reacting");

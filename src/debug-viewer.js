@@ -1,20 +1,43 @@
 export class AnimationDebugViewer {
-  constructor(root, resident) {
+  constructor(root, residents) {
     this.root = root;
-    this.resident = resident;
+    this.residents = Array.isArray(residents) ? residents : [residents];
+    this.resident = this.residents[0];
     this.flags = { anchor: true, collision: false, interaction: false };
     this.render();
     this.bind();
-    resident.animation.addEventListener("change", () => this.refresh());
-    resident.stateMachine.addEventListener("change", () => this.refresh());
-    resident.addEventListener("animationevent", event => this.logEvent(event.detail));
+    this.detach = this.attachListeners(this.resident);
+  }
+
+  attachListeners(resident) {
+    const onAnimChange = () => this.refresh();
+    const onStateChange = () => this.refresh();
+    const onEvent = event => this.logEvent(event.detail);
+    resident.animation.addEventListener("change", onAnimChange);
+    resident.stateMachine.addEventListener("change", onStateChange);
+    resident.addEventListener("animationevent", onEvent);
+    return () => {
+      resident.animation.removeEventListener("change", onAnimChange);
+      resident.stateMachine.removeEventListener("change", onStateChange);
+      resident.removeEventListener("animationevent", onEvent);
+    };
+  }
+
+  switchTo(resident) {
+    if (resident === this.resident) return;
+    this.detach?.();
+    delete this.resident.element.dataset.guides;
+    this.resident = resident;
+    this.render();
+    this.bind();
+    this.detach = this.attachListeners(this.resident);
   }
 
   render() {
     const names = Object.keys(this.resident.config.animations);
     this.root.innerHTML = `
       <p class="eyebrow">Developer tool</p><h2>Animation viewer</h2>
-      <label>Character<select disabled><option>Pepita</option></select></label>
+      <label>Character<select id="character-select">${this.residents.map(r => `<option value="${r.config.id}" ${r === this.resident ? "selected" : ""}>${r.config.displayName}</option>`).join("")}</select></label>
       <label>Animation<select id="animation-select">${names.map(name => `<option>${name}</option>`).join("")}</select></label>
       <label>Direction<select id="direction-select"><option>down</option><option>left</option><option>right</option><option>up</option></select></label>
       <label>FPS <output id="fps-value">6</output><input id="fps" type="range" min="1" max="24" value="6" /></label>
@@ -25,6 +48,7 @@ export class AnimationDebugViewer {
       <label class="check"><input data-flag="interaction" type="checkbox" /> Show interaction point</label>
       <div id="readout" class="readout"></div>
       <div><strong>Event log</strong><ol id="event-log" class="event-log"><li>No events yet</li></ol></div>`;
+    this.characterSelect = this.root.querySelector("#character-select");
     this.select = this.root.querySelector("#animation-select");
     this.direction = this.root.querySelector("#direction-select");
     this.fps = this.root.querySelector("#fps");
@@ -33,6 +57,10 @@ export class AnimationDebugViewer {
   }
 
   bind() {
+    this.characterSelect.addEventListener("change", () => {
+      const resident = this.residents.find(r => r.config.id === this.characterSelect.value);
+      if (resident) this.switchTo(resident);
+    });
     this.select.addEventListener("change", () => this.chooseAnimation());
     this.direction.addEventListener("change", () => this.chooseAnimation(true));
     this.fps.addEventListener("input", () => {
@@ -75,7 +103,7 @@ export class AnimationDebugViewer {
   refresh() {
     const animation = this.resident.animation;
     this.select.value = animation.name;
-    this.readout.innerHTML = `Character: Pepita<br>State: ${this.resident.stateMachine.state}<br>Animation: ${animation.name}<br>Frame: ${String(animation.frame).padStart(2, "0")} / ${String(animation.definition.frames).padStart(2, "0")}<br>FPS: ${animation.fps}`;
+    this.readout.innerHTML = `Character: ${this.resident.config.displayName}<br>State: ${this.resident.stateMachine.state}<br>Animation: ${animation.name}<br>Frame: ${String(animation.frame).padStart(2, "0")} / ${String(animation.definition.frames).padStart(2, "0")}<br>FPS: ${animation.fps}`;
   }
 
   logEvent(detail) {

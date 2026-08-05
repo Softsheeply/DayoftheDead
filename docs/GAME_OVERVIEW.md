@@ -52,8 +52,10 @@ Folders exist under `assets/decorations/<name>/` (currently empty, `.gitkeep`-tr
 ## Roadmap
 
 1. ~~Pepita Phase 1: reusable animation foundation~~ — done
-2. Pepita Phase 2: real artwork for every Pepita animation (in progress — `walk_down` and the village background are real art; everything else is still placeholder)
-3. Second humanoid resident (likely Abuela Rosa or Tito) to prove the controllers actually generalize beyond Pepita
-4. First pet rig (Xolo) — lower silhouette, dog+bone interaction
-5. World interaction framework generalized beyond the single flower-bed example
-6. Decorations and UI icon sets
+2. Pepita Phase 2: real artwork for every Pepita animation (in progress — `walk_down` and all four `idle` directions are real art; skip/talk/dance/expressions/actions are still placeholder)
+3. ~~Multi-resident framework + resident-to-resident talking~~ — done, proved with Miguelito (placeholder art) talking to Pepita autonomously via `src/village.js`
+4. Give Miguelito (or whichever resident comes next) real artwork — he's currently a deliberately minimal placeholder that exists only to validate #3
+5. Carry/drag system (pick up a pet, drop it in a building) — not started
+6. Stateful world hotspots beyond the flower bed (e.g. a house window that toggles lit/unlit) — not started
+7. First pet rig (Xolo) — lower silhouette, dog+bone interaction
+8. Decorations and UI icon sets
