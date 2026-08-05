@@ -32,7 +32,10 @@ const benchEl = document.querySelector("#bench");
 const benchBox = localBox(benchEl, villageRect);
 const benchPoint = { x: benchBox.x + benchBox.width * 0.5, y: benchBox.y + benchBox.height + 18 };
 const bounds = { width: villageEl.clientWidth, height: villageEl.clientHeight };
-const obstacles = [houseBox, fountainBox];
+// The flower bed is deliberately left out: it's a low, ground-level patch,
+// not a solid object residents would visibly clip through. The bench is a
+// raised piece of furniture, so it's treated the same as the house/fountain.
+const obstacles = [houseBox, fountainBox, benchBox];
 
 const village = new Village(villageEl);
 

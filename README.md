@@ -26,7 +26,7 @@ Runs two things:
 
 `walk/down` (8 frames) and `idle_down` / `idle_left` / `idle_right` / `idle_up` (1 real frame each, from a labeled turnaround sheet — down/left mirrored to right/up from back view) have been replaced with real illustrated artwork, background-matted and re-anchored to the shared 128×128 foot baseline. Idle is a static pose per direction for now rather than the spec's 6-frame subtle-motion loop; `character.json` frame counts were updated to match honestly (1 frame, not 6 padded with placeholder duplicates). Every other animation (skip, talk, dance, expressions, florist actions) is still an explicit transparent placeholder. Diagonal reference poses are stashed in `assets/characters/pepita/reference/` for future 8-direction support.
 
-The village background (`assets/backgrounds/village_day.jpg`) is real illustrated art as well. The `.house` and `.fountain` DOM elements are kept as invisible obstacle hitboxes positioned over their painted counterparts; `.flower-bed` stays interactive with a state-driven glow.
+The village background (`assets/backgrounds/village_day.jpg`) is real illustrated art as well. The `.house`, `.fountain`, and `.bench` DOM elements are kept as obstacle hitboxes positioned over their painted counterparts, so autonomous wandering (`moveRandomly`'s `navigation.randomPoint()`) routes around them instead of visually overlapping. `.flower-bed` is deliberately *not* an obstacle — it's a low ground-level patch, not something a resident would visibly clip through by walking over it. Deliberate interaction approaches (walking to a specific interaction point, like the bench's sit spot) bypass obstacle checking entirely, since those targets are explicit, not randomly chosen.
 
 ## Architecture
 
