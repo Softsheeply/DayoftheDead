@@ -59,3 +59,16 @@ Folders exist under `assets/decorations/<name>/` (currently empty, `.gitkeep`-tr
 6. Stateful world hotspots beyond the flower bed (e.g. a house window that toggles lit/unlit) — not started
 7. First pet rig (Xolo) — lower silhouette, dog+bone interaction
 8. Decorations and UI icon sets
+
+## Parked ideas (not scheduled, just don't want to lose them)
+
+1. **Day/night toggle** — tap the sun or moon to switch the village between day and night backgrounds. Needs a night version of the background art (day exists: `assets/backgrounds/village_day.jpg`); the swap itself is trivial once that art exists.
+2. **Per-character idle/free-move toggle** — tap a resident to pin them to one spot (idle) or let them roam freely. The debug viewer already disables `resident.behaviour.enabled` when scrubbing animations manually; this would be the player-facing version of that same switch.
+3. **Tap a building to interact with it** — turn on a light, open a door, etc. This is the "stateful world hotspots" item already on the roadmap (#6), generalized from the flower-bed pattern.
+4. **Wider/zoomed-out map** — current `.village` viewport is fixed at 650px tall; revisit once there are enough residents/objects that the space feels crowded.
+5. **Multiple maps, move characters between them** — e.g. village → graveyard → spirit realm, carrying a resident along. Bigger structural change: `Village` would need to track which map each resident is on, and there'd need to be a per-map background + obstacle set instead of the single hardcoded one in `app.js` today.
+6. **Lots more interactive objects generally** — reinforces #3/#6 above; the flower-bed interaction chain (`src/interaction.js`) is the template to repeat for whatever gets added.
+
+## Known bad art attempts (don't reuse)
+
+- **Xolo, first attempt** — ChatGPT generated a moss/rock totem-creature completely unrelated to the alebrije spirit-dog brief (teal-black glowing patterns, red bat ears, one big glowing eye per side). Discarded, not saved to the repo. Re-run the prompt in a fresh chat before trying again.
