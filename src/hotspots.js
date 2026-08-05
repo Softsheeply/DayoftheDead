@@ -16,6 +16,12 @@
  * This is the flower-bed pattern (dry -> water_flowers -> watered -> dry
  * again after 20s), generalized so the next object like it (a door, a
  * bench, a shrine) is just a config object away.
+ *
+ * By default, once the action animation finishes the resident plays
+ * "celebrate" and returns to idle (resident.js finishAction's default).
+ * Pass postAction: "hold" (with holdMs) to instead have the resident stay
+ * in the action's final pose for holdMs before returning to idle -- e.g.
+ * actually remaining seated on a bench instead of standing right back up.
  */
 export function createInteractiveHotspot({
   id,
@@ -30,7 +36,9 @@ export function createInteractiveHotspot({
   revertAfterMs = null,
   emptyLabel,
   settledLabel,
-  onSettled
+  onSettled,
+  postAction,
+  holdMs
 }) {
   let revertTimer = null;
 
@@ -52,6 +60,8 @@ export function createInteractiveHotspot({
     point,
     facing,
     action,
+    postAction,
+    holdMs,
     isAvailable: () => element.dataset.state === fromState,
     onStart: duringState ? () => { element.dataset.state = duringState; } : undefined,
     onComplete: () => {

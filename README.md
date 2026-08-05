@@ -51,8 +51,14 @@ Any resident — humanoid or pet — can reuse these controllers by supplying a 
 All three below are built on the two factories in `src/hotspots.js`:
 
 - **Flower bed** (`createInteractiveHotspot`) — starts dry; tap it (or Pepita will autonomously notice ~12%/1.5s while idle) to trigger the full spec interaction chain: walk to the interaction point → face the bed → play `water_flowers` (with an intermediate `watering` pulse state) → mark it watered (visual glow) → play `celebrate` → return to idle. It dries out again after 20s.
-- **Bench** (`createInteractiveHotspot`) — tap it to have Pepita walk over and play `sit`. Known limitation: the resident interaction chain always plays `celebrate` and returns to idle right after the action animation completes (see `resident.js` `finishAction`), so she only sits for a moment, not for the bench's full 6s "recently used" glow window — that glow is a "someone was just here" cue, not a claim she's still sitting there. A real "linger while seated" behaviour needs `finishAction` to support a configurable post-action step instead of always celebrating.
+- **Bench** (`createInteractiveHotspot`) — tap it to have Pepita walk over, sit, and actually stay seated for 5s (`postAction: "hold"`, see below) before standing back up. The bench's glow window (5.5s) slightly outlasts the hold so it doesn't clear while she's still visibly sitting there.
 - **House** (`createHousingZone`) — drag any idle resident and drop them on the house to "house" them: they disappear, the house's window lights up (`#house-light`), and they stop being simulated (state `disabled`, same priority tier the spec reserves for "not part of the sim right now"). Tap the house to release whoever's inside — they reappear at the door and resume normal life. Drag is press-and-move-8px-then-release, distinct from a tap (which still triggers the wave reaction); a resident that's busy, mid-conversation, or already housed/being carried can't be picked up.
+
+### What happens after an interaction's action animation finishes
+
+By default (`resident.js` `finishAction`), a resident plays `celebrate` and returns to idle right after any interaction's action animation completes — that's what the flower bed does. A hotspot can opt out by passing `postAction: "hold"` and `holdMs: <ms>` to `createInteractiveHotspot`: instead of celebrating, the resident just stays in the action's final pose (state stays `performingAction`, `busy` stays `true`) for `holdMs`, then returns to idle on its own. This is what makes the bench work — she genuinely sits there instead of sitting-then-instantly-standing-to-celebrate.
+
+The hold is guarded against being interrupted: if something else takes over mid-hold (tapped, dragged into the house, started a conversation...), a version counter (`resident.actionVersion`, bumped by every state-changing method) means the hold's own timer becomes a no-op when it eventually fires, instead of clobbering whatever took over.
 
 ## Multi-resident: talking to each other
 

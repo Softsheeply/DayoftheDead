@@ -555,4 +555,51 @@ test("resident: updateMovement advances position toward the target and arrives c
   assert.equal(resident.busy, false);
 });
 
+test("resident: postAction 'hold' keeps the resident in place, then returns to idle after holdMs", () => {
+  mock.timers.enable();
+  try {
+    const resident = makeResident({ animations: { sit: { frames: 1, fps: 10, loop: false, paths: ["sit.png"] } } });
+    resident.interactions.register("bench", { action: "sit", postAction: "hold", holdMs: 1000 });
+    resident.pendingInteraction = { id: "bench", stage: "acting" };
+    resident.playAction("sit", { interactionId: "bench" });
+    resident.animation.update(200); // completes the 1-frame non-looping animation -> finishAction -> hold starts
+    assert.equal(resident.busy, true, "should remain busy while holding, not celebrate-and-idle");
+    assert.equal(resident.stateMachine.state, "performingAction", "should stay in the sit pose");
+    mock.timers.tick(999);
+    assert.equal(resident.busy, true, "should not resolve before holdMs elapses");
+    mock.timers.tick(1);
+    assert.equal(resident.busy, false);
+    assert.equal(resident.stateMachine.state, "idle");
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test("resident: an interruption during a hold prevents the stale timer from clobbering the newer action", () => {
+  mock.timers.enable();
+  try {
+    const resident = makeResident({
+      animations: {
+        sit: { frames: 1, fps: 10, loop: false, paths: ["sit.png"] },
+        wave: { frames: 1, fps: 10, loop: false, paths: ["wave.png"] }
+      }
+    });
+    resident.interactions.register("bench", { action: "sit", postAction: "hold", holdMs: 1000 });
+    resident.pendingInteraction = { id: "bench", stage: "acting" };
+    resident.playAction("sit", { interactionId: "bench" });
+    resident.animation.update(200); // hold starts
+
+    // Something else takes over mid-hold (e.g. the player taps this resident)
+    // before the hold's own timer would have fired:
+    resident.playAction("wave", { reaction: true });
+    assert.equal(resident.animation.name, "wave");
+
+    mock.timers.tick(1000); // the now-stale hold timer fires here
+    assert.equal(resident.animation.name, "wave", "the stale hold callback must not override the newer action");
+    assert.equal(resident.busy, true, "wave hasn't completed on its own yet, so busy should still be true");
+  } finally {
+    mock.timers.reset();
+  }
+});
+
 console.log("logic.mjs: all tests defined (node:test will report pass/fail counts below)");

@@ -18,7 +18,7 @@ h1, h2, p { margin-top: 0; } h1 { margin-bottom: 6px; font-family: Georgia, seri
 .fountain { position:absolute; right:30%; top:44%; width:150px; height:120px; z-index:2; opacity:0; }
 .bench { position:absolute; right:8%; bottom:8%; width:170px; height:90px; border-radius:16px; z-index:2; padding:0; cursor:pointer; transition:filter .4s, box-shadow .4s, background .4s; background:radial-gradient(ellipse at center, #c9843c26, transparent 72%); border:0; }
 .bench[data-state="empty"] { box-shadow:0 0 0 3px #c9843c33 inset; }
-.bench[data-state="just-used"] { background:radial-gradient(ellipse at center, #ffc34c40, transparent 72%); box-shadow:0 0 24px #ffc34c88; }
+.bench[data-state="occupied"] { background:radial-gradient(ellipse at center, #ffc34c40, transparent 72%); box-shadow:0 0 24px #ffc34c88; }
 .resident { position:absolute; width:128px; height:128px; transform-origin:50% 100%; transform:translate(-50%,-100%) scale(.62); padding:0; border:0; background:transparent; z-index:10; cursor:pointer; touch-action:none; }
 .resident.resident-pet { transform:translate(-50%,-100%) scale(.4); }
 .resident img { width:128px; height:128px; image-rendering:auto; pointer-events:none; }

@@ -36,6 +36,11 @@ export class AnimatedResident extends EventTarget {
     this.housed = false;
     this.dragState = null;
     this.suppressClick = false;
+    // Bumped by anything that changes what the resident is currently doing
+    // (playing an action, walking, talking, being housed...). holdAfterAction
+    // captures the version at hold-start and checks it hasn't changed before
+    // finalizing back to idle, so a hold can't clobber whatever interrupted it.
+    this.actionVersion = 0;
     this.element.addEventListener("click", () => this.onTap());
     this.animation.addEventListener("complete", () => this.finishAction());
     this.events.addEventListener("animationevent", event => this.dispatchEvent(new CustomEvent("animationevent", { detail: event.detail })));
@@ -94,6 +99,7 @@ export class AnimatedResident extends EventTarget {
   }
 
   beginCarry() {
+    this.actionVersion += 1;
     this.dragState.moved = true;
     this.suppressClick = true;
     this.beingCarried = true;
@@ -129,6 +135,7 @@ export class AnimatedResident extends EventTarget {
   }
 
   house(zone) {
+    this.actionVersion += 1;
     this.housed = true;
     this.busy = true;
     this.target = null;
@@ -169,6 +176,8 @@ export class AnimatedResident extends EventTarget {
   talkTo(other) {
     if (this.busy || this.conversation || other.busy || other.conversation) return;
     if (!this.config.animations.talk_down || !other.config.animations?.talk_down) return;
+    this.actionVersion += 1;
+    other.actionVersion += 1;
     this.behaviour.postpone(6000);
     other.behaviour.postpone(6000);
     const dx = other.position.x - this.position.x;
@@ -236,6 +245,7 @@ export class AnimatedResident extends EventTarget {
   moveRandomly(kind = "walk") {
     const point = this.navigation.randomPoint();
     if (!point) return this.setIdle();
+    this.actionVersion += 1;
     this.target = point;
     this.movementKind = kind;
     this.busy = true;
@@ -245,6 +255,7 @@ export class AnimatedResident extends EventTarget {
   }
 
   beginInteractionApproach(id, object) {
+    this.actionVersion += 1;
     this.pendingInteraction = { id, stage: "approaching" };
     this.target = { ...object.point };
     this.movementKind = "walk";
@@ -300,6 +311,7 @@ export class AnimatedResident extends EventTarget {
       }
       return;
     }
+    this.actionVersion += 1;
     this.target = null;
     this.busy = true;
     if (!interactionId) this.direction = "down";
@@ -315,8 +327,14 @@ export class AnimatedResident extends EventTarget {
   finishAction() {
     if (this.pendingInteraction?.stage === "acting") {
       const { id } = this.pendingInteraction;
+      const object = this.interactions.objects.get(id);
       this.interactions.complete(id);
       this.pendingInteraction = null;
+      const postAction = object?.postAction ?? "celebrate";
+      if (postAction === "hold") {
+        this.holdAfterAction(object?.holdMs ?? 1500);
+        return;
+      }
       this.expressions.set("excited");
       this.playAction("celebrate");
       return;
@@ -326,6 +344,22 @@ export class AnimatedResident extends EventTarget {
     this.busy = false;
     this.stateMachine.unlock("idle");
     this.setIdle();
+  }
+
+  // Stay in the just-completed action's final pose (e.g. sitting) for holdMs
+  // instead of immediately celebrating and standing back up. Guarded by
+  // actionVersion so an interruption (tapped, carried, dragged into the
+  // house, started talking...) during the hold can't get clobbered when the
+  // hold's timer eventually fires.
+  holdAfterAction(holdMs) {
+    const version = this.actionVersion;
+    clearTimeout(this.holdTimer);
+    this.holdTimer = setTimeout(() => {
+      if (this.actionVersion !== version) return;
+      this.busy = false;
+      this.stateMachine.unlock("idle");
+      this.setIdle();
+    }, holdMs);
   }
 
   setIdle() {

@@ -104,15 +104,11 @@ createInteractiveHotspot({
   onSettled: () => pepita.showSpeech("Flowers watered!")
 });
 
-// -- Bench: empty -> sit -> just-used -> empty again after 6s ----------------
-// NOTE: the resident's interaction chain (see resident.js finishAction)
-// always plays "celebrate" and returns to idle right after the action
-// animation completes -- there's no "hold this pose for N seconds" concept
-// yet. So Pepita actually only sits for a moment, not for the full
-// revertAfterMs window; the bench's glow just outlasts her visit as a
-// "recently used" cue rather than claiming she's still sitting there.
-// A real "linger while seated" behaviour would need finishAction to support
-// a configurable post-action step instead of always celebrating.
+// -- Bench: empty -> sit (and actually stay seated for 5s) -> empty ----------
+// postAction: "hold" keeps Pepita in the sit animation's final pose for
+// holdMs instead of immediately celebrating and standing back up (see
+// resident.js holdAfterAction). revertAfterMs is a touch longer than holdMs
+// so the bench's glow doesn't clear while she's still visibly sitting there.
 createInteractiveHotspot({
   id: "bench",
   element: benchEl,
@@ -121,10 +117,12 @@ createInteractiveHotspot({
   action: "sit",
   resident: pepita,
   fromState: "empty",
-  toState: "just-used",
-  revertAfterMs: 6000,
+  toState: "occupied",
+  postAction: "hold",
+  holdMs: 5000,
+  revertAfterMs: 5500,
   emptyLabel: "Empty bench, tap to rest",
-  settledLabel: "Recently-used bench",
+  settledLabel: "Pepita is resting",
   onSettled: () => pepita.showSpeech("Just a moment...")
 });
 
