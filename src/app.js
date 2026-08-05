@@ -162,6 +162,20 @@ createHousingZone({
   occupiedLabel: count => `${count} resident(s) inside, tap to let them out`
 });
 
+// -- Day/night toggle ----------------------------------------------------------
+// Purely visual for now (a CSS filter placeholder, see styles.css) -- no
+// gameplay behaviour is tied to time of day yet. Swap the CSS filter for a
+// real village_night.jpg background whenever that art exists; this toggle
+// wiring doesn't need to change either way.
+const dayNightToggleEl = document.querySelector("#day-night-toggle");
+let timeOfDay = villageEl.dataset.time ?? "day";
+dayNightToggleEl.addEventListener("click", () => {
+  timeOfDay = timeOfDay === "day" ? "night" : "day";
+  villageEl.dataset.time = timeOfDay;
+  dayNightToggleEl.textContent = timeOfDay === "day" ? "🌙" : "☀️";
+  dayNightToggleEl.setAttribute("aria-label", timeOfDay === "day" ? "Switch to night" : "Switch to day");
+});
+
 let previous = performance.now();
 function loop(now) {
   village.update(Math.min(now - previous, 100));
