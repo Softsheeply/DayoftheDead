@@ -1,6 +1,8 @@
 # Spirit Village — Pepita Phase 1
 
-This repository contains the first reusable resident-animation foundation for **Dead of the Dead / Spirit Village**. Pepita the florist is the only resident implemented in Phase 1.
+This repository contains the first reusable resident-animation foundation for **Dead of the Dead / Spirit Village**. Pepita the florist is the only resident implemented so far.
+
+See [`docs/GAME_OVERVIEW.md`](docs/GAME_OVERVIEW.md) for the full game vision — the planned roster, world interactions, decorations, and UI — and how the current code maps onto it. The rest of the roster has scaffolded (art-less) folders under `assets/characters/` so future work has a home.
 
 ## Run locally
 

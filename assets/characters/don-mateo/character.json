@@ -1,0 +1,8 @@
+{
+  "id": "don-mateo",
+  "displayName": "Don Mateo",
+  "role": "carpenter",
+  "kind": "humanoid",
+  "status": "planned",
+  "note": "Reuses Pepita's Phase 1 animation/state/behaviour/navigation/interaction controllers. Needs its own sprite set and character.json animation manifest before it can be added to the village."
+}

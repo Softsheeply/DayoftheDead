@@ -1,0 +1,59 @@
+# Dead of the Dead — Spirit Village
+
+A living Día de los Muertos village, Pocket-God-inspired but **friendly and for kids**: things are always happening whether or not the player touches anything, and interactions are rewarding and delightful rather than mean-spirited or chaotic. Poking the world should make a kid smile, not wince.
+
+Concept reference: `docs/concept-art/gameplay-overview.jpg`
+
+## Roster
+
+Pepita is the only resident actually implemented (see `assets/characters/pepita/`, `src/`). Everyone else below has a `character.json` stub under `assets/characters/<slug>/` marked `"status": "planned"` — the folder and id exist so future work has a home, but there's no art or animation manifest yet.
+
+| Name | Role | Kind | Slug |
+| --- | --- | --- | --- |
+| Pepita | florist | humanoid | `pepita` — **implemented** |
+| Abuela Rosa | always baking | humanoid | `abuela-rosa` |
+| Miguelito | mischievous kid | humanoid | `miguelito` |
+| Tito | mariachi | humanoid | `tito` |
+| Pinto | painter | humanoid | `pinto` |
+| Don Mateo | carpenter | humanoid | `don-mateo` |
+| Xolo | loyal dog | pet | `xolo` |
+| Doña Luz | candle keeper | humanoid | `dona-luz` |
+| Señor Curevo | clever crow | pet (flighted) | `senor-curevo` |
+| Gato | curious cat | pet | `gato` |
+
+Humanoid residents are meant to reuse Pepita's controllers (`CharacterAnimationController`, `CharacterStateMachine`, `CharacterBehaviourController`, `CharacterNavigationController`, `CharacterInteractionController`, `CharacterExpressionController`) by supplying their own sprite set and `character.json`. Pets will likely need a lighter rig (lower silhouette, no florist-style actions; a flighted pet like Señor Curevo needs perching/flying states) but should keep the same state-machine and weighted-behaviour *concepts*.
+
+## World interactions (target list, not yet built)
+
+These are the "poke the world, something delightful happens" moments from the concept — the standard every future interaction should be held to (positive outcome, no punishing the player for tapping something):
+
+- **Firework + Mariachi** → huge street festival
+- **Dog + Bone** (Xolo) → digs up hidden treasure
+- **Crow + Hat** (Señor Curevo) → steals it and flies off (playful, not malicious)
+- **Rain + Marigolds** → flowers bloom everywhere
+- **Lantern + Night** → friendly spirits visit
+- **Chocolate + Abuela Rosa** → everyone comes for a party
+
+Pepita's flower-bed watering loop (`src/interaction.js`, wired in `src/app.js`) is the first real implementation of this pattern: dry → interact → reward → celebrate.
+
+## Decorations (target list)
+
+Folders exist under `assets/decorations/<name>/` (currently empty, `.gitkeep`-tracked) for: candle, flower-pot, bench, fountain, lantern, archway. These are ambient/placeable world objects, distinct from character sprites.
+
+## UI (target list)
+
+`assets/ui/icons/` is scaffolded for the HUD shown in the concept: currency (marigold-skull coin, flower currency), a heart/affection meter, and icon buttons for inventory, journal/book, pets, camera, and settings.
+
+## Backgrounds
+
+- `assets/backgrounds/village_day.jpg` — implemented, used as the live `.village` background in `index.html`/`src/styles.css`.
+- Village night and graveyard scenes are referenced in the concept art but not yet added as separate background assets.
+
+## Roadmap
+
+1. ~~Pepita Phase 1: reusable animation foundation~~ — done
+2. Pepita Phase 2: real artwork for every Pepita animation (in progress — `walk_down` and the village background are real art; everything else is still placeholder)
+3. Second humanoid resident (likely Abuela Rosa or Tito) to prove the controllers actually generalize beyond Pepita
+4. First pet rig (Xolo) — lower silhouette, dog+bone interaction
+5. World interaction framework generalized beyond the single flower-bed example
+6. Decorations and UI icon sets

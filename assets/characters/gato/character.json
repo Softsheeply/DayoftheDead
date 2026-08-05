@@ -1,0 +1,8 @@
+{
+  "id": "gato",
+  "displayName": "Gato",
+  "role": "curious cat",
+  "kind": "pet",
+  "status": "planned",
+  "note": "Pets are lower to the ground with a different silhouette than humanoid residents, so this will likely need a lighter pet-specific rig rather than reusing the humanoid controller as-is (same state machine and behaviour-weighting concepts should still apply)."
+}
