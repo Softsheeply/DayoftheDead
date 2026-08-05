@@ -13,9 +13,10 @@ async function loadCharacter(id) {
   return response.json();
 }
 
-const [pepitaConfig, miguelitoConfig] = await Promise.all([
+const [pepitaConfig, miguelitoConfig, xoloConfig] = await Promise.all([
   loadCharacter("pepita"),
-  loadCharacter("miguelito")
+  loadCharacter("miguelito"),
+  loadCharacter("xolo")
 ]);
 
 const villageEl = document.querySelector("#village");
@@ -57,13 +58,27 @@ const miguelito = new AnimatedResident(
   }
 );
 
+const xolo = new AnimatedResident(
+  xoloConfig,
+  document.querySelector("#resident-xolo"),
+  document.querySelector("#resident-xolo-sprite"),
+  document.querySelector("#speech-xolo"),
+  bounds,
+  {
+    obstacles,
+    expressionIcon: document.querySelector("#resident-xolo-expression"),
+    spawn: { x: bounds.width * 0.52, y: bounds.height * 0.78 }
+  }
+);
+
 village.register(pepita);
 village.register(miguelito);
+village.register(xolo);
 
-new AnimationDebugViewer(document.querySelector("#debug-viewer"), [pepita, miguelito]);
+new AnimationDebugViewer(document.querySelector("#debug-viewer"), [pepita, miguelito, xolo]);
 
 // Dev convenience: inspect/drive the live village from the browser console.
-window.__village = { village, pepita, miguelito };
+window.__village = { village, pepita, miguelito, xolo };
 
 pepita.events.addEventListener("spawn_petals", () => pepita.showSpeech("Petals!"));
 pepita.events.addEventListener("transfer_flower", () => pepita.showSpeech("A flower for you."));

@@ -1,6 +1,6 @@
 # Spirit Village — Pepita Phase 1
 
-This repository contains the first reusable resident-animation foundation for **Dead of the Dead / Spirit Village**. Pepita the florist is the first fully-art'd resident. Miguelito exists as a deliberately minimal placeholder second resident (`scripts/generate-miguelito-placeholders.py`), used to prove the multi-resident framework actually generalizes beyond a single hardcoded character — not a real character yet.
+This repository contains the first reusable resident-animation foundation for **Dead of the Dead / Spirit Village**. Pepita the florist is the first fully-art'd resident. Miguelito exists as a deliberately minimal placeholder second resident (`scripts/generate-miguelito-placeholders.py`), used to prove the multi-resident framework actually generalizes beyond a single hardcoded character — not a real character yet. Xolo is the first pet: real, background-matted `walk_left` art (genuine alternating-leg gait, confirmed frame-by-frame before wiring in) mirrored to `walk_right`; `walk_down`/`walk_up`/idle are temporary stand-ins reusing the left-facing art until front/back poses exist (see `assets/characters/xolo/character.json`'s `visualReference.note`).
 
 See [`docs/GAME_OVERVIEW.md`](docs/GAME_OVERVIEW.md) for the full game vision — the planned roster, world interactions, decorations, and UI — and how the current code maps onto it. The rest of the roster has scaffolded (art-less) folders under `assets/characters/` so future work has a home.
 
@@ -41,7 +41,7 @@ The village background (`assets/backgrounds/village_day.jpg`) is real illustrate
 - `scripts/generate-placeholders.py` — deterministic Pepita placeholder generator
 - `scripts/generate-miguelito-placeholders.py` — deterministic Miguelito placeholder generator
 
-Any humanoid resident can reuse these controllers by supplying a compatible character manifest and sprite set — `character.json`'s `animations` map drives everything, including which actions/expressions exist. Residents without a given animation (e.g. Miguelito has no `wave`) fall back gracefully instead of throwing.
+Any resident — humanoid or pet — can reuse these controllers by supplying a compatible character manifest and sprite set; `character.json`'s `animations` map drives everything, including which actions/expressions exist. Residents without a given animation (e.g. Miguelito has no `wave`, Xolo has no `talk_down`) fall back gracefully instead of throwing: `playAction` shows the reaction without changing pose, and `checkConversation`/`canBeTalkedTo` simply skip residents with no talk animation. Xolo turned out not to need a separate "pet rig" as originally planned — the existing controllers handle a lower/wider quadruped silhouette fine as long as its `character.json` only defines animations it actually has art for.
 
 ## Interactive objects
 

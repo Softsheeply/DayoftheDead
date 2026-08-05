@@ -17,6 +17,7 @@ h1, h2, p { margin-top: 0; } h1 { margin-bottom: 6px; font-family: Georgia, seri
 .flower-bed[data-state="watered"] { background:radial-gradient(ellipse at center, #47c4ba33, transparent 72%); box-shadow:0 0 28px #47c4ba99; }
 .fountain { position:absolute; right:30%; top:44%; width:150px; height:120px; z-index:2; opacity:0; }
 .resident { position:absolute; width:128px; height:128px; transform-origin:50% 100%; transform:translate(-50%,-100%) scale(.62); padding:0; border:0; background:transparent; z-index:10; cursor:pointer; touch-action:none; }
+.resident.resident-pet { transform:translate(-50%,-100%) scale(.4); }
 .resident img { width:128px; height:128px; image-rendering:auto; pointer-events:none; }
 .resident.reacting { animation:pop .35s ease-out; }
 .resident.carried { z-index:60; filter:drop-shadow(0 14px 16px #00000077); }

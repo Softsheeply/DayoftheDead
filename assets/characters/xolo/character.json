@@ -1,12 +1,15 @@
 {
+  "schemaVersion": 1,
   "id": "xolo",
   "displayName": "Xolo",
   "role": "loyal dog",
   "kind": "pet",
-  "status": "planned",
-  "note": "Pets are lower to the ground with a different silhouette than humanoid residents, so this will likely need a lighter pet-specific rig rather than reusing the humanoid controller as-is (same state machine and behaviour-weighting concepts should still apply). Fits the dog+bone interaction (digs up hidden treasure).",
+  "status": "real-art-partial",
+  "frameWidth": 128,
+  "frameHeight": 128,
+  "defaultDirection": "left",
   "visualReference": {
-    "status": "single-pose-confirmed",
+    "status": "walk-left-confirmed",
     "description": "Small chibi dog, dark near-black body, teal/green face-and-back patches, orange floral marks scattered across the body, large upright ears (red inside), big round gold-ringed eyes with dark pupils, gold-tipped curled tail, orange paws.",
     "palette": {
       "body_dark": "#110904",
@@ -16,6 +19,75 @@
       "eye_gold": "#e8b84b"
     },
     "referenceImage": "reference/design_confirmed_pose.png",
-    "note": "This confirmed pose is a 3/4 turn, not a clean cardinal-direction front view -- do not wire it into idle_down as-is. Use it as the style/color reference when requesting front/back/left/right poses."
+    "baselineY": 119,
+    "padding": 8,
+    "bakedShadow": false,
+    "note": "walk_left is real, background-matted, confirmed art (8-frame gait, genuine alternating leg poses). walk_right is walk_left mirrored. walk_down/walk_up and idle_down/idle_up are TEMPORARY stand-ins reusing the left-facing art so the engine has something to render for every direction -- Xolo will visibly face sideways even when moving up/down until real front/back poses exist. Replace those four the moment front/back art lands."
+  },
+  "movement": {
+    "walkSpeed": 48,
+    "skipSpeed": 70
+  },
+  "anchors": {
+    "feet": [64, 119],
+    "interaction": [64, 124]
+  },
+  "collisionBox": {
+    "x": 38,
+    "y": 84,
+    "width": 52,
+    "height": 34
+  },
+  "states": ["idle", "walking", "skipping", "talking", "dancing", "performingAction", "sitting", "sleeping", "falling", "disabled"],
+  "statePriority": ["disabled", "falling", "performingAction", "talking", "dancing", "skipping", "walking", "sitting", "sleeping", "idle"],
+  "personality": {
+    "decisionIntervalMs": [1500, 5000],
+    "autonomousBehaviours": [
+      { "action": "idle", "weight": 0.35 },
+      { "action": "walk", "weight": 0.65 }
+    ]
+  },
+  "interactionHooks": ["playerTouch", "otherCharacters", "bone"],
+  "animations": {
+    "idle_down": { "frames": 1, "fps": 1, "loop": true, "paths": ["idle/down/xolo_idle_down_00.png"] },
+    "idle_left": { "frames": 1, "fps": 1, "loop": true, "paths": ["idle/left/xolo_idle_left_00.png"] },
+    "idle_right": { "frames": 1, "fps": 1, "loop": true, "paths": ["idle/right/xolo_idle_right_00.png"] },
+    "idle_up": { "frames": 1, "fps": 1, "loop": true, "paths": ["idle/up/xolo_idle_up_00.png"] },
+    "walk_down": {
+      "frames": 8, "fps": 10, "loop": true,
+      "paths": [
+        "walk/down/xolo_walk_down_00.png", "walk/down/xolo_walk_down_01.png",
+        "walk/down/xolo_walk_down_02.png", "walk/down/xolo_walk_down_03.png",
+        "walk/down/xolo_walk_down_04.png", "walk/down/xolo_walk_down_05.png",
+        "walk/down/xolo_walk_down_06.png", "walk/down/xolo_walk_down_07.png"
+      ]
+    },
+    "walk_left": {
+      "frames": 8, "fps": 10, "loop": true,
+      "paths": [
+        "walk/left/xolo_walk_left_00.png", "walk/left/xolo_walk_left_01.png",
+        "walk/left/xolo_walk_left_02.png", "walk/left/xolo_walk_left_03.png",
+        "walk/left/xolo_walk_left_04.png", "walk/left/xolo_walk_left_05.png",
+        "walk/left/xolo_walk_left_06.png", "walk/left/xolo_walk_left_07.png"
+      ]
+    },
+    "walk_right": {
+      "frames": 8, "fps": 10, "loop": true,
+      "paths": [
+        "walk/right/xolo_walk_right_00.png", "walk/right/xolo_walk_right_01.png",
+        "walk/right/xolo_walk_right_02.png", "walk/right/xolo_walk_right_03.png",
+        "walk/right/xolo_walk_right_04.png", "walk/right/xolo_walk_right_05.png",
+        "walk/right/xolo_walk_right_06.png", "walk/right/xolo_walk_right_07.png"
+      ]
+    },
+    "walk_up": {
+      "frames": 8, "fps": 10, "loop": true,
+      "paths": [
+        "walk/up/xolo_walk_up_00.png", "walk/up/xolo_walk_up_01.png",
+        "walk/up/xolo_walk_up_02.png", "walk/up/xolo_walk_up_03.png",
+        "walk/up/xolo_walk_up_04.png", "walk/up/xolo_walk_up_05.png",
+        "walk/up/xolo_walk_up_06.png", "walk/up/xolo_walk_up_07.png"
+      ]
+    }
   }
 }

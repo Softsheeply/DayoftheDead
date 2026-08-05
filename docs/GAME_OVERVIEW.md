@@ -6,22 +6,22 @@ Concept reference: `docs/concept-art/gameplay-overview.jpg`
 
 ## Roster
 
-Pepita is the only resident actually implemented (see `assets/characters/pepita/`, `src/`). Everyone else below has a `character.json` stub under `assets/characters/<slug>/` marked `"status": "planned"` — the folder and id exist so future work has a home, but there's no art or animation manifest yet.
+Pepita, Miguelito (placeholder art), and Xolo (partial real art) are implemented and in the live village (see `assets/characters/`, `src/`). Everyone else below has a `character.json` stub under `assets/characters/<slug>/` marked `"status": "planned"` — the folder and id exist so future work has a home, but there's no art or animation manifest yet.
 
 | Name | Role | Kind | Slug |
 | --- | --- | --- | --- |
-| Pepita | florist | humanoid | `pepita` — **implemented** |
+| Pepita | florist | humanoid | `pepita` — **implemented**, mostly real art |
+| Miguelito | mischievous kid | humanoid | `miguelito` — **implemented**, placeholder art |
+| Xolo | loyal dog | pet | `xolo` — **implemented**, real `walk_left`/`walk_right` art, rest placeholder |
 | Abuela Rosa | always baking | humanoid | `abuela-rosa` |
-| Miguelito | mischievous kid | humanoid | `miguelito` |
 | Tito | mariachi | humanoid | `tito` |
 | Pinto | painter | humanoid | `pinto` |
 | Don Mateo | carpenter | humanoid | `don-mateo` |
-| Xolo | loyal dog | pet | `xolo` |
 | Doña Luz | candle keeper | humanoid | `dona-luz` |
 | Señor Curevo | clever crow | pet (flighted) | `senor-curevo` |
 | Gato | curious cat | pet | `gato` |
 
-Humanoid residents are meant to reuse Pepita's controllers (`CharacterAnimationController`, `CharacterStateMachine`, `CharacterBehaviourController`, `CharacterNavigationController`, `CharacterInteractionController`, `CharacterExpressionController`) by supplying their own sprite set and `character.json`. Pets will likely need a lighter rig (lower silhouette, no florist-style actions; a flighted pet like Señor Curevo needs perching/flying states) but should keep the same state-machine and weighted-behaviour *concepts*.
+Humanoid residents are meant to reuse Pepita's controllers (`CharacterAnimationController`, `CharacterStateMachine`, `CharacterBehaviourController`, `CharacterNavigationController`, `CharacterInteractionController`, `CharacterExpressionController`) by supplying their own sprite set and `character.json`. Pets turned out to need the same thing, not a separate lighter rig as originally assumed here — Xolo proved the existing controllers handle a lower/wider quadruped silhouette fine; the only real requirement is that a resident's `character.json` only lists animations it actually has art for (missing ones degrade gracefully rather than crashing). A flighted pet like Señor Curevo will still likely need real perching/flying states whenever that gets built, since "walk" doesn't cover flight.
 
 ## World interactions (target list, not yet built)
 
@@ -57,7 +57,7 @@ Folders exist under `assets/decorations/<name>/` (currently empty, `.gitkeep`-tr
 4. Give Miguelito (or whichever resident comes next) real artwork — he's currently a deliberately minimal placeholder that exists only to validate #3
 5. ~~Carry/drag system~~ — done: drag any idle resident onto the house to house them (they disappear, the house's window lights up), tap the house to release. Proved with Miguelito; works for anyone, not pet-specific, so Xolo can use the same mechanism once his art exists.
 6. Stateful world hotspots beyond the flower bed and the house light (e.g. other buildings, a bench, a door that opens) — not started, but the house-light toggle in #5 is the first concrete example of this pattern beyond the flower bed
-7. First pet rig (Xolo) — lower silhouette, dog+bone interaction. A single confirmed design pose exists (`assets/characters/xolo/reference/design_confirmed_pose.png`); still need clean cardinal-direction walk cycles before he can move around
+7. ~~First pet rig (Xolo)~~ — turned out not to need a separate rig at all: the existing humanoid controllers work fine for a pet silhouette. Xolo is in the village now with real, verified `walk_left` art (8-frame gait, mirrored to `walk_right`) and can be carried/housed/tapped like anyone else. Still needed: real `walk_down`/`walk_up`/idle art (currently reusing the left-facing frames as a placeholder stand-in) and the dog+bone interaction itself
 8. Decorations and UI icon sets
 
 ## Parked ideas (not scheduled, just don't want to lose them)
@@ -71,4 +71,5 @@ Folders exist under `assets/decorations/<name>/` (currently empty, `.gitkeep`-tr
 
 ## Known bad art attempts (don't reuse)
 
-- **Xolo, first attempt** — ChatGPT generated a moss/rock totem-creature completely unrelated to the alebrije spirit-dog brief (teal-black glowing patterns, red bat ears, one big glowing eye per side). Discarded, not saved to the repo. Re-run the prompt in a fresh chat before trying again.
+- **Xolo, first attempt** — ChatGPT generated a moss/rock totem-creature completely unrelated to the alebrije spirit-dog brief (teal-black glowing patterns, red bat ears, one big glowing eye per side). Discarded, not saved to the repo.
+- **Xolo, front-facing walk cycle attempt** — design was correct this time (matched the confirmed reference), but all 8 frames were the same standing pose with no real leg movement — verified by cropping and comparing frames directly, not just eyeballing. Discarded, not saved to the repo. Takeaway: a straight-on front view is a genuinely hard angle for these models to convey quadruped walking motion in (legs mostly swing side-to-side from that angle, so the per-frame difference is small and easy for the model to flatten away). The side-view request that followed worked on the first try — see `assets/characters/xolo/walk/left/`.
