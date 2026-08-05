@@ -48,10 +48,11 @@ Any resident — humanoid or pet — can reuse these controllers by supplying a 
 
 ## Interactive objects
 
-All three below are built on the two factories in `src/hotspots.js`:
+All four below are built on the two factories in `src/hotspots.js`:
 
 - **Flower bed** (`createInteractiveHotspot`) — starts dry; tap it (or Pepita will autonomously notice ~12%/1.5s while idle) to trigger the full spec interaction chain: walk to the interaction point → face the bed → play `water_flowers` (with an intermediate `watering` pulse state) → mark it watered (visual glow) → play `celebrate` → return to idle. It dries out again after 20s.
 - **Bench** (`createInteractiveHotspot`) — tap it to have Pepita walk over, sit, and actually stay seated for 5s (`postAction: "hold"`, see below) before standing back up. The bench's glow window (5.5s) slightly outlasts the hold so it doesn't clear while she's still visibly sitting there.
+- **Fountain** (`createInteractiveHotspot`) — tap it to have Pepita walk over and play `throw_petals`, making a wish. This reuses an animation (and its `spawn_petals` frame-4 event marker) that already existed in Pepita's manifest but had no in-game trigger until now — no new art needed. Reverts to available again after 8s.
 - **House** (`createHousingZone`) — drag any idle resident and drop them on the house to "house" them: they disappear, the house's window lights up (`#house-light`), and they stop being simulated (state `disabled`, same priority tier the spec reserves for "not part of the sim right now"). Tap the house to release whoever's inside — they reappear at the door and resume normal life. Drag is press-and-move-8px-then-release, distinct from a tap (which still triggers the wave reaction); a resident that's busy, mid-conversation, or already housed/being carried can't be picked up.
 
 ### What happens after an interaction's action animation finishes

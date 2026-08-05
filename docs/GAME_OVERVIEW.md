@@ -34,7 +34,7 @@ These are the "poke the world, something delightful happens" moments from the co
 - **Lantern + Night** → friendly spirits visit
 - **Chocolate + Abuela Rosa** → everyone comes for a party
 
-Pepita's flower-bed watering loop (`src/interaction.js`, wired in `src/app.js`) is the first real implementation of this pattern: dry → interact → reward → celebrate.
+Pepita's flower-bed watering loop was the first real implementation of this pattern (dry → interact → reward → celebrate); the bench and fountain (make-a-wish, `throw_petals`) followed using the generalized `src/hotspots.js` factories. None of these are from the original target list above yet -- those all need new art/characters first (Xolo for dog+bone, Señor Curevo for crow+hat, etc.) -- but they're proof the underlying pattern is solid and cheap to repeat once that art exists.
 
 ## Decorations (target list)
 

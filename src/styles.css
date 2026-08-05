@@ -15,7 +15,9 @@ h1, h2, p { margin-top: 0; } h1 { margin-bottom: 6px; font-family: Georgia, seri
 .flower-bed[data-state="dry"] { box-shadow:0 0 0 3px #ffc34c40 inset; }
 .flower-bed[data-state="watering"] { animation:water-pulse .35s ease-in-out infinite alternate; }
 .flower-bed[data-state="watered"] { background:radial-gradient(ellipse at center, #47c4ba33, transparent 72%); box-shadow:0 0 28px #47c4ba99; }
-.fountain { position:absolute; right:30%; top:44%; width:150px; height:120px; z-index:2; opacity:0; }
+.fountain { position:absolute; right:30%; top:44%; width:150px; height:120px; border-radius:50%; z-index:2; padding:0; cursor:pointer; transition:filter .4s, box-shadow .4s, background .4s; background:radial-gradient(ellipse at center, #47c4ba26, transparent 72%); border:0; }
+.fountain[data-state="still"] { box-shadow:0 0 0 3px #47c4ba33 inset; }
+.fountain[data-state="wished"] { background:radial-gradient(ellipse at center, #f3a33b40, transparent 72%); box-shadow:0 0 26px #f3a33b88; }
 .bench { position:absolute; right:8%; bottom:8%; width:170px; height:90px; border-radius:16px; z-index:2; padding:0; cursor:pointer; transition:filter .4s, box-shadow .4s, background .4s; background:radial-gradient(ellipse at center, #c9843c26, transparent 72%); border:0; }
 .bench[data-state="empty"] { box-shadow:0 0 0 3px #c9843c33 inset; }
 .bench[data-state="occupied"] { background:radial-gradient(ellipse at center, #ffc34c40, transparent 72%); box-shadow:0 0 24px #ffc34c88; }

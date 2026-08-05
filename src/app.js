@@ -24,7 +24,9 @@ const villageEl = document.querySelector("#village");
 const villageRect = villageEl.getBoundingClientRect();
 const houseEl = document.querySelector(".house");
 const houseBox = localBox(houseEl, villageRect);
-const fountainBox = localBox(document.querySelector(".fountain"), villageRect);
+const fountainEl = document.querySelector("#fountain");
+const fountainBox = localBox(fountainEl, villageRect);
+const fountainPoint = { x: fountainBox.x + fountainBox.width * 0.5, y: fountainBox.y + fountainBox.height + 20 };
 const flowerBedEl = document.querySelector("#flower-bed");
 const flowerBedBox = localBox(flowerBedEl, villageRect);
 const flowerBedPoint = { x: flowerBedBox.x + flowerBedBox.width - 34, y: flowerBedBox.y + flowerBedBox.height + 22 };
@@ -127,6 +129,26 @@ createInteractiveHotspot({
   emptyLabel: "Empty bench, tap to rest",
   settledLabel: "Pepita is resting",
   onSettled: () => pepita.showSpeech("Just a moment...")
+});
+
+// -- Fountain: toss petals in and make a wish, reusing throw_petals ----------
+// throw_petals already existed in Pepita's manifest (with a spawn_petals
+// event marker at frame 4) but had no in-game trigger -- the fountain gives
+// it one, using existing art rather than needing anything new. Uses the
+// default postAction ("celebrate") since a quick wish doesn't need to hold.
+createInteractiveHotspot({
+  id: "fountain",
+  element: fountainEl,
+  point: fountainPoint,
+  facing: "down",
+  action: "throw_petals",
+  resident: pepita,
+  fromState: "still",
+  toState: "wished",
+  revertAfterMs: 8000,
+  emptyLabel: "Toss petals into the fountain to make a wish",
+  settledLabel: "A wish was just made here",
+  onSettled: () => pepita.showSpeech("I wish for a wonderful day!")
 });
 
 // -- House: drag a resident in, window lights up, tap to release -------------
