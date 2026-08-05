@@ -12,13 +12,15 @@ npm run dev
 
 Then open <http://localhost:4173>. Tap Pepita in the village to trigger her reaction. The panel on the right is the developer animation viewer.
 
-## Validate assets
+## Tests
 
 ```sh
 npm test
 ```
 
-The validation checks the animation manifest, expected frame files, PNG dimensions, and event markers.
+Runs two things:
+- `tests/validate-assets.mjs` — checks Pepita's animation manifest, expected frame files, PNG dimensions, and event markers.
+- `tests/logic.mjs` (Node's built-in test runner) — exercises the actual runtime logic against lightweight DOM stubs, no browser needed: state machine transitions/locking, weighted behaviour selection, navigation obstacle avoidance, the interaction request/resolve/complete lifecycle, animation frame timing/looping/event markers, both hotspot factories (including the revert timer via `node:test`'s mock timers), `Village`'s drop-zone hit-testing and conversation-partner search, and `AnimatedResident` itself (construction, graceful fallback for missing animations, tap-vs-drag disambiguation, carry/house/release, talk, and movement arrival).
 
 ## Artwork status
 
