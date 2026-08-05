@@ -55,16 +55,16 @@ Folders exist under `assets/decorations/<name>/` (currently empty, `.gitkeep`-tr
 2. Pepita Phase 2: real artwork for every Pepita animation (in progress — `walk_down` and all four `idle` directions are real art; skip/talk/dance/expressions/actions are still placeholder)
 3. ~~Multi-resident framework + resident-to-resident talking~~ — done, proved with Miguelito (placeholder art) talking to Pepita autonomously via `src/village.js`
 4. Give Miguelito (or whichever resident comes next) real artwork — he's currently a deliberately minimal placeholder that exists only to validate #3
-5. Carry/drag system (pick up a pet, drop it in a building) — not started
-6. Stateful world hotspots beyond the flower bed (e.g. a house window that toggles lit/unlit) — not started
-7. First pet rig (Xolo) — lower silhouette, dog+bone interaction
+5. ~~Carry/drag system~~ — done: drag any idle resident onto the house to house them (they disappear, the house's window lights up), tap the house to release. Proved with Miguelito; works for anyone, not pet-specific, so Xolo can use the same mechanism once his art exists.
+6. Stateful world hotspots beyond the flower bed and the house light (e.g. other buildings, a bench, a door that opens) — not started, but the house-light toggle in #5 is the first concrete example of this pattern beyond the flower bed
+7. First pet rig (Xolo) — lower silhouette, dog+bone interaction. A single confirmed design pose exists (`assets/characters/xolo/reference/design_confirmed_pose.png`); still need clean cardinal-direction walk cycles before he can move around
 8. Decorations and UI icon sets
 
 ## Parked ideas (not scheduled, just don't want to lose them)
 
 1. **Day/night toggle** — tap the sun or moon to switch the village between day and night backgrounds. Needs a night version of the background art (day exists: `assets/backgrounds/village_day.jpg`); the swap itself is trivial once that art exists.
 2. **Per-character idle/free-move toggle** — tap a resident to pin them to one spot (idle) or let them roam freely. The debug viewer already disables `resident.behaviour.enabled` when scrubbing animations manually; this would be the player-facing version of that same switch.
-3. **Tap a building to interact with it** — turn on a light, open a door, etc. This is the "stateful world hotspots" item already on the roadmap (#6), generalized from the flower-bed pattern.
+3. ~~**Tap a building to interact with it** — turn on a light, open a door, etc.~~ — partially done: dragging a resident onto the house turns its window light on/off (`src/village.js` drop zones + `#house-light`). Still to do: interactions that don't require carrying something (e.g. tap the house directly to trigger something), and other buildings besides the house.
 4. **Wider/zoomed-out map** — current `.village` viewport is fixed at 650px tall; revisit once there are enough residents/objects that the space feels crowded.
 5. **Multiple maps, move characters between them** — e.g. village → graveyard → spirit realm, carrying a resident along. Bigger structural change: `Village` would need to track which map each resident is on, and there'd need to be a per-map background + obstacle set instead of the single hardcoded one in `app.js` today.
 6. **Lots more interactive objects generally** — reinforces #3/#6 above; the flower-bed interaction chain (`src/interaction.js`) is the template to repeat for whatever gets added.

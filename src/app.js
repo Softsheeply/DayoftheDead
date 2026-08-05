@@ -20,7 +20,8 @@ const [pepitaConfig, miguelitoConfig] = await Promise.all([
 
 const villageEl = document.querySelector("#village");
 const villageRect = villageEl.getBoundingClientRect();
-const houseBox = localBox(document.querySelector(".house"), villageRect);
+const houseEl = document.querySelector(".house");
+const houseBox = localBox(houseEl, villageRect);
 const fountainBox = localBox(document.querySelector(".fountain"), villageRect);
 const flowerBedEl = document.querySelector("#flower-bed");
 const flowerBedBox = localBox(flowerBedEl, villageRect);
@@ -28,7 +29,7 @@ const flowerBedPoint = { x: flowerBedBox.x + flowerBedBox.width - 34, y: flowerB
 const bounds = { width: villageEl.clientWidth, height: villageEl.clientHeight };
 const obstacles = [houseBox, fountainBox];
 
-const village = new Village();
+const village = new Village(villageEl);
 
 const pepita = new AnimatedResident(
   pepitaConfig,
@@ -88,6 +89,35 @@ pepita.interactions.register("flowerBed", {
 });
 
 flowerBedEl.addEventListener("click", () => pepita.interactions.request("flowerBed"));
+
+// -- Carry Pepita or Miguelito into the florist house ------------------------
+const houseLightEl = document.querySelector("#house-light");
+const housedResidents = new Set();
+
+function updateHouseLight() {
+  houseLightEl.classList.toggle("on", housedResidents.size > 0);
+  houseEl.setAttribute(
+    "aria-label",
+    housedResidents.size > 0 ? `${housedResidents.size} resident(s) inside, tap to let them out` : "Empty house"
+  );
+}
+
+village.registerDropZone({
+  box: houseBox,
+  onHouse: resident => {
+    housedResidents.add(resident);
+    updateHouseLight();
+  }
+});
+
+houseEl.addEventListener("click", () => {
+  const resident = housedResidents.values().next().value;
+  if (!resident) return;
+  housedResidents.delete(resident);
+  const doorPoint = { x: houseBox.x + houseBox.width * 0.5, y: houseBox.y + houseBox.height + 26 };
+  resident.release(doorPoint);
+  updateHouseLight();
+});
 
 let previous = performance.now();
 function loop(now) {

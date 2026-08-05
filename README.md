@@ -46,6 +46,7 @@ Any humanoid resident can reuse these controllers by supplying a compatible char
 ## Interactive objects
 
 - **Flower bed** — starts dry; tap it (or Pepita will autonomously notice ~12%/1.5s while idle) to trigger the full spec interaction chain: walk to the interaction point → face the bed → play `water_flowers` → mark it watered (visual glow) → play `celebrate` → return to idle. It dries out again after 20s.
+- **House** — drag any idle resident and drop them on the house to "house" them: they disappear, the house's window lights up (`#house-light`), and they stop being simulated (state `disabled`, same priority tier the spec reserves for "not part of the sim right now"). Tap the house to release whoever's inside — they reappear at the door and resume normal life. Drag is press-and-move-8px-then-release, distinct from a tap (which still triggers the wave reaction); a resident that's busy, mid-conversation, or already housed/being carried can't be picked up.
 
 ## Multi-resident: talking to each other
 

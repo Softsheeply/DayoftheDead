@@ -1,6 +1,8 @@
 export class Village {
-  constructor() {
+  constructor(villageEl) {
     this.residents = [];
+    this.villageEl = villageEl;
+    this.dropZones = [];
   }
 
   register(resident) {
@@ -29,5 +31,24 @@ export class Village {
       }
     }
     return closest;
+  }
+
+  // -- Carry / drop zones ----------------------------------------------------
+
+  toLocalPoint(clientX, clientY) {
+    const rect = this.villageEl.getBoundingClientRect();
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  registerDropZone(zone) {
+    this.dropZones.push(zone);
+  }
+
+  findDropZone(point, resident) {
+    return this.dropZones.find(zone => {
+      if (zone.accepts && !zone.accepts(resident)) return false;
+      const box = zone.box;
+      return point.x >= box.x && point.x <= box.x + box.width && point.y >= box.y && point.y <= box.y + box.height;
+    });
   }
 }

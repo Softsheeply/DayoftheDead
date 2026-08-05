@@ -32,9 +32,16 @@ export class AnimatedResident extends EventTarget {
     this.village = null;
     this.flowerBedNoticeElapsed = 0;
     this.conversationNoticeElapsed = 0;
+    this.beingCarried = false;
+    this.housed = false;
+    this.dragState = null;
+    this.suppressClick = false;
     this.element.addEventListener("click", () => this.onTap());
     this.animation.addEventListener("complete", () => this.finishAction());
     this.events.addEventListener("animationevent", event => this.dispatchEvent(new CustomEvent("animationevent", { detail: event.detail })));
+    this.handlePointerMove = event => this.onPointerMove(event);
+    this.handlePointerUp = event => this.onPointerUp(event);
+    this.element.addEventListener("pointerdown", event => this.onPointerDown(event));
     this.renderPosition();
   }
 
@@ -58,6 +65,89 @@ export class AnimatedResident extends EventTarget {
     if (this.flowerBedNoticeElapsed < 1500) return;
     this.flowerBedNoticeElapsed = 0;
     if (Math.random() < 0.12) this.interactions.request("flowerBed");
+  }
+
+  // -- Carrying (pick up, drag, drop in a building) ------------------------
+
+  canBeCarried() {
+    return !this.busy && !this.conversation && !this.housed && !this.beingCarried;
+  }
+
+  onPointerDown(event) {
+    if (!this.village || !this.canBeCarried()) return;
+    this.dragState = { pointerId: event.pointerId, startClientX: event.clientX, startClientY: event.clientY, moved: false };
+    try { this.element.setPointerCapture?.(event.pointerId); } catch { /* no active native pointer session to capture -- safe to ignore */ }
+    this.element.addEventListener("pointermove", this.handlePointerMove);
+    this.element.addEventListener("pointerup", this.handlePointerUp);
+    this.element.addEventListener("pointercancel", this.handlePointerUp);
+  }
+
+  onPointerMove(event) {
+    if (!this.dragState || event.pointerId !== this.dragState.pointerId) return;
+    const dx = event.clientX - this.dragState.startClientX;
+    const dy = event.clientY - this.dragState.startClientY;
+    if (!this.dragState.moved && Math.hypot(dx, dy) > 8) this.beginCarry();
+    if (this.beingCarried) {
+      this.position = this.village.toLocalPoint(event.clientX, event.clientY);
+      this.renderPosition();
+    }
+  }
+
+  beginCarry() {
+    this.dragState.moved = true;
+    this.suppressClick = true;
+    this.beingCarried = true;
+    this.target = null;
+    this.busy = true;
+    this.behaviour.postpone(2000);
+    this.stateMachine.transition("disabled", { force: true, lock: true });
+    this.element.classList.add("carried");
+  }
+
+  onPointerUp(event) {
+    if (!this.dragState || event.pointerId !== this.dragState.pointerId) return;
+    try { this.element.releasePointerCapture?.(event.pointerId); } catch { /* nothing was captured -- safe to ignore */ }
+    this.element.removeEventListener("pointermove", this.handlePointerMove);
+    this.element.removeEventListener("pointerup", this.handlePointerUp);
+    this.element.removeEventListener("pointercancel", this.handlePointerUp);
+    const wasCarried = this.beingCarried;
+    this.dragState = null;
+    if (!wasCarried) return;
+    this.beingCarried = false;
+    this.element.classList.remove("carried");
+    const dropPoint = this.village.toLocalPoint(event.clientX, event.clientY);
+    const zone = this.village.findDropZone(dropPoint, this);
+    if (zone) {
+      this.house(zone);
+      return;
+    }
+    this.position = this.navigation.isWalkable(dropPoint.x, dropPoint.y) ? dropPoint : this.position;
+    this.busy = false;
+    this.stateMachine.unlock("idle");
+    this.setIdle();
+    this.renderPosition();
+  }
+
+  house(zone) {
+    this.housed = true;
+    this.busy = true;
+    this.target = null;
+    this.stateMachine.transition("disabled", { force: true, lock: true });
+    this.element.style.display = "none";
+    this.speech.classList.remove("visible");
+    zone.onHouse?.(this);
+  }
+
+  release(point) {
+    this.housed = false;
+    this.busy = false;
+    this.element.style.display = "";
+    this.position = point;
+    this.stateMachine.unlock("idle");
+    this.setIdle();
+    this.renderPosition();
+    this.expressions.set("happy");
+    this.showSpeech("¡Afuera!");
   }
 
   // -- Talking to another resident -----------------------------------------
@@ -246,6 +336,10 @@ export class AnimatedResident extends EventTarget {
   }
 
   onTap() {
+    if (this.suppressClick) {
+      this.suppressClick = false;
+      return;
+    }
     this.behaviour.postpone(4500);
     this.playAction("wave", { reaction: true });
   }

@@ -12,12 +12,13 @@
         <header>
           <p class="eyebrow">Dead of the Dead · Phase 1</p>
           <h1>Spirit Village</h1>
-          <p>Pepita and Miguelito are testing the multi-resident village. Tap either one to say hello, or wait and watch them run into each other.</p>
+          <p>Pepita and Miguelito are testing the multi-resident village. Tap either one to say hello, drag one into the house, or wait and watch them run into each other.</p>
         </header>
         <div id="village" class="village" aria-label="Spirit Village test area">
           <div class="moon"></div>
           <div class="papel papel-one"></div><div class="papel papel-two"></div><div class="papel papel-three"></div>
-          <div class="house"><span>Floristería</span></div>
+          <div class="house" aria-label="Empty house"><span>Floristería</span></div>
+          <span id="house-light" class="house-light"></span>
           <button id="flower-bed" class="flower-bed" data-state="dry" aria-label="Dry flower bed, tap to water"></button>
           <div class="fountain"></div>
           <button id="resident-pepita" class="resident" aria-label="Tap Pepita">
