@@ -4,5 +4,18 @@
   "role": "loyal dog",
   "kind": "pet",
   "status": "planned",
-  "note": "Pets are lower to the ground with a different silhouette than humanoid residents, so this will likely need a lighter pet-specific rig rather than reusing the humanoid controller as-is (same state machine and behaviour-weighting concepts should still apply). Fits the dog+bone interaction (digs up hidden treasure)."
+  "note": "Pets are lower to the ground with a different silhouette than humanoid residents, so this will likely need a lighter pet-specific rig rather than reusing the humanoid controller as-is (same state machine and behaviour-weighting concepts should still apply). Fits the dog+bone interaction (digs up hidden treasure).",
+  "visualReference": {
+    "status": "single-pose-confirmed",
+    "description": "Small chibi dog, dark near-black body, teal/green face-and-back patches, orange floral marks scattered across the body, large upright ears (red inside), big round gold-ringed eyes with dark pupils, gold-tipped curled tail, orange paws.",
+    "palette": {
+      "body_dark": "#110904",
+      "teal_patch": "#4c856d",
+      "floral_orange": "#e08a2e",
+      "ear_red": "#d94a3a",
+      "eye_gold": "#e8b84b"
+    },
+    "referenceImage": "reference/design_confirmed_pose.png",
+    "note": "This confirmed pose is a 3/4 turn, not a clean cardinal-direction front view -- do not wire it into idle_down as-is. Use it as the style/color reference when requesting front/back/left/right poses."
+  }
 }
