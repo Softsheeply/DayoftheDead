@@ -35,8 +35,9 @@ The village background (`assets/backgrounds/village_day.jpg`) is real illustrate
 - `src/navigation.js` — obstacle-avoiding random point selection and nav-area bounds
 - `src/interaction.js` — object interaction registry (approach → face → act → complete)
 - `src/expression.js` — timed expression icon overlay
-- `src/village.js` — manages the list of residents in the scene and finds a nearby idle resident to talk to
+- `src/village.js` — manages the list of residents in the scene, drop zones, and finds a nearby idle resident to talk to
 - `src/resident.js` — reusable resident composition, movement, interactions, and resident-to-resident conversation
+- `src/hotspots.js` — factories for stateful world objects: `createInteractiveHotspot` (tap/notice → approach → act → state changes, optionally reverts after a delay) and `createHousingZone` (drag someone in, indicator toggles, tap to release). Pulled out after building the flower bed and the house as one-off code each; the bench reuses `createInteractiveHotspot` with zero new glue
 - `src/debug-viewer.js` — animation inspection controls, with a character switcher for multi-resident scenes
 - `scripts/generate-placeholders.py` — deterministic Pepita placeholder generator
 - `scripts/generate-miguelito-placeholders.py` — deterministic Miguelito placeholder generator
@@ -45,8 +46,11 @@ Any resident — humanoid or pet — can reuse these controllers by supplying a 
 
 ## Interactive objects
 
-- **Flower bed** — starts dry; tap it (or Pepita will autonomously notice ~12%/1.5s while idle) to trigger the full spec interaction chain: walk to the interaction point → face the bed → play `water_flowers` → mark it watered (visual glow) → play `celebrate` → return to idle. It dries out again after 20s.
-- **House** — drag any idle resident and drop them on the house to "house" them: they disappear, the house's window lights up (`#house-light`), and they stop being simulated (state `disabled`, same priority tier the spec reserves for "not part of the sim right now"). Tap the house to release whoever's inside — they reappear at the door and resume normal life. Drag is press-and-move-8px-then-release, distinct from a tap (which still triggers the wave reaction); a resident that's busy, mid-conversation, or already housed/being carried can't be picked up.
+All three below are built on the two factories in `src/hotspots.js`:
+
+- **Flower bed** (`createInteractiveHotspot`) — starts dry; tap it (or Pepita will autonomously notice ~12%/1.5s while idle) to trigger the full spec interaction chain: walk to the interaction point → face the bed → play `water_flowers` (with an intermediate `watering` pulse state) → mark it watered (visual glow) → play `celebrate` → return to idle. It dries out again after 20s.
+- **Bench** (`createInteractiveHotspot`) — tap it to have Pepita walk over and play `sit`. Known limitation: the resident interaction chain always plays `celebrate` and returns to idle right after the action animation completes (see `resident.js` `finishAction`), so she only sits for a moment, not for the bench's full 6s "recently used" glow window — that glow is a "someone was just here" cue, not a claim she's still sitting there. A real "linger while seated" behaviour needs `finishAction` to support a configurable post-action step instead of always celebrating.
+- **House** (`createHousingZone`) — drag any idle resident and drop them on the house to "house" them: they disappear, the house's window lights up (`#house-light`), and they stop being simulated (state `disabled`, same priority tier the spec reserves for "not part of the sim right now"). Tap the house to release whoever's inside — they reappear at the door and resume normal life. Drag is press-and-move-8px-then-release, distinct from a tap (which still triggers the wave reaction); a resident that's busy, mid-conversation, or already housed/being carried can't be picked up.
 
 ## Multi-resident: talking to each other
 

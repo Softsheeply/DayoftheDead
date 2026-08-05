@@ -1,6 +1,7 @@
 import { AnimatedResident } from "./resident.js";
 import { AnimationDebugViewer } from "./debug-viewer.js";
 import { Village } from "./village.js";
+import { createInteractiveHotspot, createHousingZone } from "./hotspots.js";
 
 function localBox(el, villageRect) {
   const rect = el.getBoundingClientRect();
@@ -27,6 +28,9 @@ const fountainBox = localBox(document.querySelector(".fountain"), villageRect);
 const flowerBedEl = document.querySelector("#flower-bed");
 const flowerBedBox = localBox(flowerBedEl, villageRect);
 const flowerBedPoint = { x: flowerBedBox.x + flowerBedBox.width - 34, y: flowerBedBox.y + flowerBedBox.height + 22 };
+const benchEl = document.querySelector("#bench");
+const benchBox = localBox(benchEl, villageRect);
+const benchPoint = { x: benchBox.x + benchBox.width * 0.5, y: benchBox.y + benchBox.height + 18 };
 const bounds = { width: villageEl.clientWidth, height: villageEl.clientHeight };
 const obstacles = [houseBox, fountainBox];
 
@@ -83,55 +87,56 @@ window.__village = { village, pepita, miguelito, xolo };
 pepita.events.addEventListener("spawn_petals", () => pepita.showSpeech("Petals!"));
 pepita.events.addEventListener("transfer_flower", () => pepita.showSpeech("A flower for you."));
 
-let dryTimer = null;
-function scheduleDryOut() {
-  clearTimeout(dryTimer);
-  dryTimer = setTimeout(() => { flowerBedEl.dataset.state = "dry"; flowerBedEl.setAttribute("aria-label", "Dry flower bed, tap to water"); }, 20000);
-}
-
-pepita.interactions.register("flowerBed", {
+// -- Flower bed: dry -> water_flowers -> watered -> dry again after 20s ------
+createInteractiveHotspot({
+  id: "flowerBed",
+  element: flowerBedEl,
   point: flowerBedPoint,
   facing: "down",
   action: "water_flowers",
-  isAvailable: () => flowerBedEl.dataset.state === "dry",
-  onStart: () => { flowerBedEl.dataset.state = "watering"; },
-  onComplete: () => {
-    flowerBedEl.dataset.state = "watered";
-    flowerBedEl.setAttribute("aria-label", "Watered flower bed");
-    pepita.showSpeech("Flowers watered!");
-    scheduleDryOut();
-  }
+  resident: pepita,
+  fromState: "dry",
+  toState: "watered",
+  duringState: "watering",
+  revertAfterMs: 20000,
+  emptyLabel: "Dry flower bed, tap to water",
+  settledLabel: "Watered flower bed",
+  onSettled: () => pepita.showSpeech("Flowers watered!")
 });
 
-flowerBedEl.addEventListener("click", () => pepita.interactions.request("flowerBed"));
+// -- Bench: empty -> sit -> just-used -> empty again after 6s ----------------
+// NOTE: the resident's interaction chain (see resident.js finishAction)
+// always plays "celebrate" and returns to idle right after the action
+// animation completes -- there's no "hold this pose for N seconds" concept
+// yet. So Pepita actually only sits for a moment, not for the full
+// revertAfterMs window; the bench's glow just outlasts her visit as a
+// "recently used" cue rather than claiming she's still sitting there.
+// A real "linger while seated" behaviour would need finishAction to support
+// a configurable post-action step instead of always celebrating.
+createInteractiveHotspot({
+  id: "bench",
+  element: benchEl,
+  point: benchPoint,
+  facing: "down",
+  action: "sit",
+  resident: pepita,
+  fromState: "empty",
+  toState: "just-used",
+  revertAfterMs: 6000,
+  emptyLabel: "Empty bench, tap to rest",
+  settledLabel: "Recently-used bench",
+  onSettled: () => pepita.showSpeech("Just a moment...")
+});
 
-// -- Carry Pepita or Miguelito into the florist house ------------------------
-const houseLightEl = document.querySelector("#house-light");
-const housedResidents = new Set();
-
-function updateHouseLight() {
-  houseLightEl.classList.toggle("on", housedResidents.size > 0);
-  houseEl.setAttribute(
-    "aria-label",
-    housedResidents.size > 0 ? `${housedResidents.size} resident(s) inside, tap to let them out` : "Empty house"
-  );
-}
-
-village.registerDropZone({
+// -- House: drag a resident in, window lights up, tap to release -------------
+createHousingZone({
+  village,
   box: houseBox,
-  onHouse: resident => {
-    housedResidents.add(resident);
-    updateHouseLight();
-  }
-});
-
-houseEl.addEventListener("click", () => {
-  const resident = housedResidents.values().next().value;
-  if (!resident) return;
-  housedResidents.delete(resident);
-  const doorPoint = { x: houseBox.x + houseBox.width * 0.5, y: houseBox.y + houseBox.height + 26 };
-  resident.release(doorPoint);
-  updateHouseLight();
+  zoneElement: houseEl,
+  indicatorElement: document.querySelector("#house-light"),
+  releasePoint: () => ({ x: houseBox.x + houseBox.width * 0.5, y: houseBox.y + houseBox.height + 26 }),
+  emptyLabel: "Empty house",
+  occupiedLabel: count => `${count} resident(s) inside, tap to let them out`
 });
 
 let previous = performance.now();
