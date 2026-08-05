@@ -112,55 +112,35 @@
   ],
   "animations": {
     "idle_down": {
-      "frames": 6,
-      "fps": 6,
+      "frames": 1,
+      "fps": 1,
       "loop": true,
       "paths": [
-        "idle/down/pepita_idle_down_00.png",
-        "idle/down/pepita_idle_down_01.png",
-        "idle/down/pepita_idle_down_02.png",
-        "idle/down/pepita_idle_down_03.png",
-        "idle/down/pepita_idle_down_04.png",
-        "idle/down/pepita_idle_down_05.png"
+        "idle/down/pepita_idle_down_00.png"
       ]
     },
     "idle_left": {
-      "frames": 6,
-      "fps": 6,
+      "frames": 1,
+      "fps": 1,
       "loop": true,
       "paths": [
-        "idle/left/pepita_idle_left_00.png",
-        "idle/left/pepita_idle_left_01.png",
-        "idle/left/pepita_idle_left_02.png",
-        "idle/left/pepita_idle_left_03.png",
-        "idle/left/pepita_idle_left_04.png",
-        "idle/left/pepita_idle_left_05.png"
+        "idle/left/pepita_idle_left_00.png"
       ]
     },
     "idle_right": {
-      "frames": 6,
-      "fps": 6,
+      "frames": 1,
+      "fps": 1,
       "loop": true,
       "paths": [
-        "idle/right/pepita_idle_right_00.png",
-        "idle/right/pepita_idle_right_01.png",
-        "idle/right/pepita_idle_right_02.png",
-        "idle/right/pepita_idle_right_03.png",
-        "idle/right/pepita_idle_right_04.png",
-        "idle/right/pepita_idle_right_05.png"
+        "idle/right/pepita_idle_right_00.png"
       ]
     },
     "idle_up": {
-      "frames": 6,
-      "fps": 6,
+      "frames": 1,
+      "fps": 1,
       "loop": true,
       "paths": [
-        "idle/up/pepita_idle_up_00.png",
-        "idle/up/pepita_idle_up_01.png",
-        "idle/up/pepita_idle_up_02.png",
-        "idle/up/pepita_idle_up_03.png",
-        "idle/up/pepita_idle_up_04.png",
-        "idle/up/pepita_idle_up_05.png"
+        "idle/up/pepita_idle_up_00.png"
       ]
     },
     "walk_down": {

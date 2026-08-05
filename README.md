@@ -22,7 +22,7 @@ The validation checks the animation manifest, expected frame files, PNG dimensio
 
 ## Artwork status
 
-`walk/down` (8 frames) has been replaced with real illustrated artwork, background-matted and re-anchored to the shared 128×128 foot baseline. Every other animation is still an explicit transparent placeholder. Next up: `idle/down`, following the same crop/matte pipeline, without changing filenames or anchors.
+`walk/down` (8 frames) and `idle_down` / `idle_left` / `idle_right` / `idle_up` (1 real frame each, from a labeled turnaround sheet — down/left mirrored to right/up from back view) have been replaced with real illustrated artwork, background-matted and re-anchored to the shared 128×128 foot baseline. Idle is a static pose per direction for now rather than the spec's 6-frame subtle-motion loop; `character.json` frame counts were updated to match honestly (1 frame, not 6 padded with placeholder duplicates). Every other animation (skip, talk, dance, expressions, florist actions) is still an explicit transparent placeholder. Diagonal reference poses are stashed in `assets/characters/pepita/reference/` for future 8-direction support.
 
 The village background (`assets/backgrounds/village_day.jpg`) is real illustrated art as well. The `.house` and `.fountain` DOM elements are kept as invisible obstacle hitboxes positioned over their painted counterparts; `.flower-bed` stays interactive with a state-driven glow.
 
