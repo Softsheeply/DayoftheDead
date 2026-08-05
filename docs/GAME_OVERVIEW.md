@@ -12,7 +12,7 @@ Pepita, Miguelito (placeholder art), and Xolo (partial real art) are implemented
 | --- | --- | --- | --- |
 | Pepita | florist | humanoid | `pepita` — **implemented**, mostly real art |
 | Miguelito | mischievous kid | humanoid | `miguelito` — **implemented**, placeholder art |
-| Xolo | loyal dog | pet | `xolo` — **implemented**, real `walk_left`/`walk_right` art, rest placeholder |
+| Xolo | loyal dog | pet | `xolo` — **implemented**, real `walk_left`/`walk_right` and all four `idle` poses; `walk_down`/`walk_up` still placeholder |
 | Abuela Rosa | always baking | humanoid | `abuela-rosa` |
 | Tito | mariachi | humanoid | `tito` |
 | Pinto | painter | humanoid | `pinto` |
@@ -57,7 +57,7 @@ Folders exist under `assets/decorations/<name>/` (currently empty, `.gitkeep`-tr
 4. Give Miguelito (or whichever resident comes next) real artwork — he's currently a deliberately minimal placeholder that exists only to validate #3
 5. ~~Carry/drag system~~ — done: drag any idle resident onto the house to house them (they disappear, the house's window lights up), tap the house to release. Proved with Miguelito; works for anyone, not pet-specific, so Xolo can use the same mechanism once his art exists.
 6. ~~Generalize the stateful-hotspot pattern~~ — done: `src/hotspots.js` has `createInteractiveHotspot` (flower bed, bench) and `createHousingZone` (house), both flower bed and house refactored onto it with no behaviour change, and the bench is a new third example proving it generalizes to a fresh object/action pair. Still open: more objects using the same factories (other buildings, a door), and a real "linger while seated" behaviour for the bench (see its README note on `finishAction` always celebrating)
-7. ~~First pet rig (Xolo)~~ — turned out not to need a separate rig at all: the existing humanoid controllers work fine for a pet silhouette. Xolo is in the village now with real, verified `walk_left` art (8-frame gait, mirrored to `walk_right`) and can be carried/housed/tapped like anyone else. Still needed: real `walk_down`/`walk_up`/idle art (currently reusing the left-facing frames as a placeholder stand-in) and the dog+bone interaction itself
+7. ~~First pet rig (Xolo)~~ — turned out not to need a separate rig at all: the existing humanoid controllers work fine for a pet silhouette. Xolo is in the village now with real, verified `walk_left`/`walk_right` art and real static idle poses in all four directions, and can be carried/housed/tapped like anyone else. Still needed: real `walk_down`/`walk_up` walking gaits (currently reusing the left-facing walk frames as a placeholder stand-in -- his front/back art so far is static idle only) and the dog+bone interaction itself
 8. Decorations and UI icon sets
 
 ## Parked ideas (not scheduled, just don't want to lose them)
@@ -72,4 +72,4 @@ Folders exist under `assets/decorations/<name>/` (currently empty, `.gitkeep`-tr
 ## Known bad art attempts (don't reuse)
 
 - **Xolo, first attempt** — ChatGPT generated a moss/rock totem-creature completely unrelated to the alebrije spirit-dog brief (teal-black glowing patterns, red bat ears, one big glowing eye per side). Discarded, not saved to the repo.
-- **Xolo, front-facing walk cycle attempt** — design was correct this time (matched the confirmed reference), but all 8 frames were the same standing pose with no real leg movement — verified by cropping and comparing frames directly, not just eyeballing. Discarded, not saved to the repo. Takeaway: a straight-on front view is a genuinely hard angle for these models to convey quadruped walking motion in (legs mostly swing side-to-side from that angle, so the per-frame difference is small and easy for the model to flatten away). The side-view request that followed worked on the first try — see `assets/characters/xolo/walk/left/`.
+- **Xolo, front-facing walk cycle attempt** — design was correct this time (matched the confirmed reference), but all 8 frames were the same standing pose with no real leg movement — verified by cropping and comparing frames directly, not just eyeballing. Not usable as a *walk cycle*, but not wasted either: since all frames were identical anyway, one frame got reused later as the real static `idle_down` pose once that's what was actually needed. Takeaway: a straight-on front view is a genuinely hard angle for these models to convey quadruped walking motion in (legs mostly swing side-to-side from that angle, so the per-frame difference is small and easy for the model to flatten away) -- but that same flatness is exactly fine for a static idle pose. The side-view walk request worked on the first try — see `assets/characters/xolo/walk/left/`.

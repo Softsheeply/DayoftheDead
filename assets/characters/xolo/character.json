@@ -9,7 +9,7 @@
   "frameHeight": 128,
   "defaultDirection": "left",
   "visualReference": {
-    "status": "walk-left-confirmed",
+    "status": "idle-all-directions-and-walk-left-right-confirmed",
     "description": "Small chibi dog, dark near-black body, teal/green face-and-back patches, orange floral marks scattered across the body, large upright ears (red inside), big round gold-ringed eyes with dark pupils, gold-tipped curled tail, orange paws.",
     "palette": {
       "body_dark": "#110904",
@@ -22,7 +22,7 @@
     "baselineY": 119,
     "padding": 8,
     "bakedShadow": false,
-    "note": "walk_left is real, background-matted, confirmed art (8-frame gait, genuine alternating leg poses). walk_right is walk_left mirrored. walk_down/walk_up and idle_down/idle_up are TEMPORARY stand-ins reusing the left-facing art so the engine has something to render for every direction -- Xolo will visibly face sideways even when moving up/down until real front/back poses exist. Replace those four the moment front/back art lands."
+    "note": "idle_down/idle_left/idle_right/idle_up are all real, confirmed static poses now (front/back/side references). walk_left is real, background-matted, confirmed art (8-frame gait, genuine alternating leg poses); walk_right is walk_left mirrored. walk_down/walk_up are still TEMPORARY stand-ins reusing the left-facing walk art -- Xolo will visibly face sideways while moving up/down until real front/back WALK cycles exist (his front/back poses so far are static idle references only, not a walking gait -- see docs/GAME_OVERVIEW.md's note on why front-view gaits are a hard angle for these models)."
   },
   "movement": {
     "walkSpeed": 48,
