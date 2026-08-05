@@ -33,11 +33,16 @@ const flowerBedPoint = { x: flowerBedBox.x + flowerBedBox.width - 34, y: flowerB
 const benchEl = document.querySelector("#bench");
 const benchBox = localBox(benchEl, villageRect);
 const benchPoint = { x: benchBox.x + benchBox.width * 0.5, y: benchBox.y + benchBox.height + 18 };
+const cottageBox = localBox(document.querySelector(".cottage"), villageRect);
+const templeBox = localBox(document.querySelector(".temple"), villageRect);
+const treeBaseBox = localBox(document.querySelector(".tree-base"), villageRect);
+const pondBox = localBox(document.querySelector(".pond"), villageRect);
 const bounds = { width: villageEl.clientWidth, height: villageEl.clientHeight };
 // The flower bed is deliberately left out: it's a low, ground-level patch,
-// not a solid object residents would visibly clip through. The bench is a
-// raised piece of furniture, so it's treated the same as the house/fountain.
-const obstacles = [houseBox, fountainBox, benchBox];
+// not a solid object residents would visibly clip through. Everything else
+// here -- buildings, the tree's base, the bench, the pond -- is something a
+// resident shouldn't visually walk onto/through while wandering.
+const obstacles = [houseBox, fountainBox, benchBox, cottageBox, templeBox, treeBaseBox, pondBox];
 
 const village = new Village(villageEl);
 
