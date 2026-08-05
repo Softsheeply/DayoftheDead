@@ -65,6 +65,12 @@ The hold is guarded against being interrupted: if something else takes over mid-
 
 The moon/sun button in the top-right corner of the village toggles `#village`'s `data-time` attribute between `"day"` and `"night"`. Night is currently a CSS filter placeholder (`.village[data-time="night"]` in `src/styles.css` — darkens/cools the whole scene, background and every resident/hotspot alike, since they're all descendants of `.village`) rather than a second background image, since only `village_day.jpg` exists. Swap the filter rule for a real `village_night.jpg` background whenever that art shows up; `app.js`'s toggle wiring doesn't need to change. Purely visual right now — nothing in the simulation (behaviour, interactions) currently reacts to time of day.
 
+## Pinning a resident in place
+
+Long-press any resident (hold ~550ms without moving more than 8px) to toggle them between roaming freely and staying pinned in place — the player-facing version of the debug viewer's existing `resident.behaviour.enabled` switch (parked idea #2). A pinned resident shows a 📍 badge, stops picking new autonomous behaviours (idle/walk/skip/etc.), and stops noticing the flower bed or starting conversations on its own — it will still respond to direct interaction (tap, drag/carry, an explicit `talkTo()` call), it just won't initiate anything by itself. Long-press again to unpin.
+
+This is a third gesture alongside the existing tap (wave reaction) and drag (carry into the house): quick release before the threshold with no movement is a tap, movement past 8px before the threshold starts a carry, and holding still past the threshold pins/unpins. Whichever gesture resolves, the resulting synthetic click is suppressed via the existing `suppressClick` flag so it can't also fire a wave.
+
 ## Multi-resident: talking to each other
 
 Any two residents that both have a `talk_down` animation can talk to each other: `resident.talkTo(otherResident)` walks the initiator to a standoff point near the other, has both face each other, plays `talk_<direction>` on both, shows a speech bubble on both, and returns both to idle after ~2.6s. Idle residents periodically (~10%/1.8s) check `village.findConversationPartner()` for a nearby idle resident and start a conversation on their own — this is what makes Pepita and Miguelito occasionally walk over and chat without the player doing anything. `window.__village` is exposed in the browser console (`{ village, pepita, miguelito }`) for manually poking at this — e.g. `window.__village.pepita.talkTo(window.__village.miguelito)`.

@@ -7,6 +7,7 @@ import { CharacterExpressionController } from "./expression.js";
 
 const CONVERSATION_DURATION_MS = 2600;
 const CONVERSATION_STANDOFF = 62;
+const LONG_PRESS_MS = 550;
 
 export class AnimatedResident extends EventTarget {
   constructor(config, element, image, speech, bounds, options = {}) {
@@ -36,6 +37,8 @@ export class AnimatedResident extends EventTarget {
     this.housed = false;
     this.dragState = null;
     this.suppressClick = false;
+    this.pinned = false;
+    this.longPressTimer = null;
     // Bumped by anything that changes what the resident is currently doing
     // (playing an action, walking, talking, being housed...). holdAfterAction
     // captures the version at hold-start and checks it hasn't changed before
@@ -56,7 +59,7 @@ export class AnimatedResident extends EventTarget {
       this.conversation.timer -= deltaMs;
       if (this.conversation.timer <= 0) this.endConversation();
     }
-    if (!this.busy) {
+    if (!this.busy && !this.pinned) {
       this.checkFlowerBed(deltaMs);
       this.checkConversation(deltaMs);
     }
@@ -80,22 +83,44 @@ export class AnimatedResident extends EventTarget {
 
   onPointerDown(event) {
     if (!this.village || !this.canBeCarried()) return;
-    this.dragState = { pointerId: event.pointerId, startClientX: event.clientX, startClientY: event.clientY, moved: false };
+    this.dragState = { pointerId: event.pointerId, startClientX: event.clientX, startClientY: event.clientY, moved: false, longPressed: false };
     try { this.element.setPointerCapture?.(event.pointerId); } catch { /* no active native pointer session to capture -- safe to ignore */ }
     this.element.addEventListener("pointermove", this.handlePointerMove);
     this.element.addEventListener("pointerup", this.handlePointerUp);
     this.element.addEventListener("pointercancel", this.handlePointerUp);
+    this.longPressTimer = setTimeout(() => this.triggerLongPress(event.pointerId), LONG_PRESS_MS);
   }
 
   onPointerMove(event) {
     if (!this.dragState || event.pointerId !== this.dragState.pointerId) return;
+    if (this.dragState.longPressed) return; // gesture already resolved as a long-press; ignore further movement
     const dx = event.clientX - this.dragState.startClientX;
     const dy = event.clientY - this.dragState.startClientY;
-    if (!this.dragState.moved && Math.hypot(dx, dy) > 8) this.beginCarry();
+    if (!this.dragState.moved && Math.hypot(dx, dy) > 8) {
+      clearTimeout(this.longPressTimer);
+      this.beginCarry();
+    }
     if (this.beingCarried) {
       this.position = this.village.toLocalPoint(event.clientX, event.clientY);
       this.renderPosition();
     }
+  }
+
+  // -- Pin / free-roam toggle (long-press, distinct from a tap or a drag) -
+
+  triggerLongPress(pointerId) {
+    if (!this.dragState || this.dragState.pointerId !== pointerId || this.dragState.moved) return;
+    this.dragState.longPressed = true;
+    this.suppressClick = true;
+    this.setPinned(!this.pinned);
+  }
+
+  setPinned(pinned) {
+    this.pinned = pinned;
+    this.behaviour.enabled = !pinned;
+    this.element.classList.toggle("pinned", pinned);
+    this.expressions.set(pinned ? "sleepy" : "excited", { durationMs: 1400 });
+    this.showSpeech(pinned ? "I'll stay right here." : "Time to wander!");
   }
 
   beginCarry() {
@@ -111,6 +136,7 @@ export class AnimatedResident extends EventTarget {
   }
 
   onPointerUp(event) {
+    clearTimeout(this.longPressTimer);
     if (!this.dragState || event.pointerId !== this.dragState.pointerId) return;
     try { this.element.releasePointerCapture?.(event.pointerId); } catch { /* nothing was captured -- safe to ignore */ }
     this.element.removeEventListener("pointermove", this.handlePointerMove);

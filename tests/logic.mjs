@@ -19,6 +19,11 @@ import { createInteractiveHotspot, createHousingZone } from "../src/hotspots.js"
 import { Village } from "../src/village.js";
 import { AnimatedResident } from "../src/resident.js";
 
+// Mirrors resident.js's internal LONG_PRESS_MS (not exported -- it's an
+// implementation detail of the pointer handling, not part of the module's
+// public surface). Update this if that constant changes.
+const LONG_PRESS_MS_FOR_TESTS = 550;
+
 // -- Test doubles -------------------------------------------------------------
 
 function makeClassList() {
@@ -600,6 +605,89 @@ test("resident: an interruption during a hold prevents the stale timer from clob
   } finally {
     mock.timers.reset();
   }
+});
+
+// -- Pin / free-roam toggle (long-press) -----------------------------------------
+
+test("resident: holding past the long-press threshold without moving pins the resident", () => {
+  mock.timers.enable();
+  try {
+    const resident = makeResident();
+    resident.village = { toLocalPoint: () => ({ x: 0, y: 0 }) };
+    resident.onPointerDown({ pointerId: 1, clientX: 100, clientY: 100 });
+    assert.equal(resident.pinned, false, "not pinned yet -- the long-press hasn't fired");
+    mock.timers.tick(549);
+    assert.equal(resident.pinned, false, "should not fire a moment early");
+    mock.timers.tick(1);
+    assert.equal(resident.pinned, true);
+    assert.equal(resident.behaviour.enabled, false, "pinning should disable autonomous behaviour");
+    assert.equal(resident.element.classList.contains("pinned"), true);
+    assert.equal(resident.suppressClick, true, "the click that follows pointerup should be suppressed");
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test("resident: a second long-press unpins and re-enables autonomous behaviour", () => {
+  mock.timers.enable();
+  try {
+    const resident = makeResident();
+    resident.village = { toLocalPoint: () => ({ x: 0, y: 0 }) };
+    resident.setPinned(true);
+    assert.equal(resident.behaviour.enabled, false);
+
+    resident.onPointerDown({ pointerId: 2, clientX: 50, clientY: 50 });
+    mock.timers.tick(LONG_PRESS_MS_FOR_TESTS);
+    assert.equal(resident.pinned, false);
+    assert.equal(resident.behaviour.enabled, true);
+    assert.equal(resident.element.classList.contains("pinned"), false);
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test("resident: moving before the long-press threshold starts a carry instead, and cancels the pending pin", () => {
+  mock.timers.enable();
+  try {
+    const resident = makeResident();
+    resident.village = { toLocalPoint: () => ({ x: 200, y: 200 }) };
+    resident.onPointerDown({ pointerId: 3, clientX: 100, clientY: 100 });
+    resident.onPointerMove({ pointerId: 3, clientX: 130, clientY: 100 }); // 30px > 8px threshold
+    assert.equal(resident.beingCarried, true, "should start carrying instead of waiting for the long-press");
+
+    mock.timers.tick(LONG_PRESS_MS_FOR_TESTS); // the pending long-press timer should have been cancelled
+    assert.equal(resident.pinned, false, "a carry should not also toggle pinned once the timer catches up");
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test("resident: releasing quickly (a normal tap) never triggers the pin toggle", () => {
+  const resident = makeResident();
+  resident.village = { toLocalPoint: () => ({ x: 0, y: 0 }) };
+  resident.onPointerDown({ pointerId: 4, clientX: 100, clientY: 100 });
+  resident.onPointerUp({ pointerId: 4, clientX: 100, clientY: 100 }); // released immediately, no movement
+  assert.equal(resident.pinned, false);
+  assert.equal(resident.suppressClick, false, "a genuine tap must still be able to fire the wave reaction");
+});
+
+test("resident: a pinned resident does not autonomously water flowers or start conversations", () => {
+  const resident = makeResident({ animations: { talk_down: { frames: 1, fps: 1, loop: true, paths: ["t.png"] } } });
+  resident.village = {
+    findConversationPartner: () => ({ busy: false, canBeTalkedTo: () => true, config: { animations: { talk_down: {} }, displayName: "Other" }, position: { x: 0, y: 0 } })
+  };
+  resident.interactions.register("flowerBed", { isAvailable: () => true, point: { x: 0, y: 0 } });
+  resident.setPinned(true);
+
+  const originalRandom = Math.random;
+  Math.random = () => 0; // would definitely trigger both checks' probability rolls if not pinned
+  try {
+    resident.update(5000); // comfortably past both checks' notice-elapsed thresholds
+  } finally {
+    Math.random = originalRandom;
+  }
+  assert.equal(resident.busy, false, "a pinned resident should not have started any autonomous interaction");
+  assert.equal(resident.target, null);
 });
 
 console.log("logic.mjs: all tests defined (node:test will report pass/fail counts below)");
