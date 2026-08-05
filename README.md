@@ -20,7 +20,9 @@ The validation checks the animation manifest, expected frame files, PNG dimensio
 
 ## Artwork status
 
-Every sprite is currently an explicit 128×128 transparent placeholder with a shared foot baseline and anchor. The concept sheet is visual reference only and was not cropped into the game. Final illustrated artwork should replace `idle/down` first, then `walk/down`, without changing filenames or anchors.
+`walk/down` (8 frames) has been replaced with real illustrated artwork, background-matted and re-anchored to the shared 128×128 foot baseline. Every other animation is still an explicit transparent placeholder. Next up: `idle/down`, following the same crop/matte pipeline, without changing filenames or anchors.
+
+The village background (`assets/backgrounds/village_day.jpg`) is real illustrated art as well. The `.house` and `.fountain` DOM elements are kept as invisible obstacle hitboxes positioned over their painted counterparts; `.flower-bed` stays interactive with a state-driven glow.
 
 ## Architecture
 
@@ -28,8 +30,15 @@ Every sprite is currently an explicit 128×128 transparent placeholder with a sh
 - `src/animation.js` — reusable playback and frame-event controller
 - `src/state-machine.js` — prioritized resident states
 - `src/behaviour.js` — weighted autonomous behaviour selection
+- `src/navigation.js` — obstacle-avoiding random point selection and nav-area bounds
+- `src/interaction.js` — object interaction registry (approach → face → act → complete)
+- `src/expression.js` — timed expression icon overlay
 - `src/resident.js` — reusable resident composition, movement, and interactions
 - `src/debug-viewer.js` — animation inspection controls
 - `scripts/generate-placeholders.py` — deterministic placeholder generator
 
 Future humanoid residents can reuse these controllers by supplying a compatible character manifest and sprite set.
+
+## Interactive objects
+
+- **Flower bed** — starts dry; tap it (or Pepita will autonomously notice ~12%/1.5s while idle) to trigger the full spec interaction chain: walk to the interaction point → face the bed → play `water_flowers` → mark it watered (visual glow) → play `celebrate` → return to idle. It dries out again after 20s.
