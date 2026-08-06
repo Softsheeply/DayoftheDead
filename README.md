@@ -58,6 +58,7 @@ All seven obstacle positions were calibrated by injecting a live percentage grid
 - `src/resident.js` — reusable resident composition, movement, interactions, and resident-to-resident conversation
 - `src/hotspots.js` — factories for stateful world objects: `createInteractiveHotspot` (tap/notice → approach → act → state changes, optionally reverts after a delay) and `createHousingZone` (drag someone in, indicator toggles, tap to release). Pulled out after building the flower bed and the house as one-off code each; the bench reuses `createInteractiveHotspot` with zero new glue
 - `src/debug-viewer.js` — animation inspection controls, with a character switcher for multi-resident scenes
+- `src/app.js`'s `createResident(config, spawn)` — every resident is wired up from the same set of DOM ids derived from its own `character.json` id (`#resident-<id>`, `#resident-<id>-sprite`, `#speech-<id>`, `#resident-<id>-expression`), so adding the next resident is one `createResident(...)` call instead of a fresh ~15-line copy-pasted block
 - `scripts/generate-placeholders.py` — deterministic Pepita placeholder generator
 - `scripts/generate-miguelito-placeholders.py` — deterministic Miguelito placeholder generator
 

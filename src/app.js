@@ -46,48 +46,32 @@ const obstacles = [houseBox, fountainBox, benchBox, cottageBox, templeBox, treeB
 
 const village = new Village(villageEl);
 
-const pepita = new AnimatedResident(
-  pepitaConfig,
-  document.querySelector("#resident-pepita"),
-  document.querySelector("#resident-pepita-sprite"),
-  document.querySelector("#speech-pepita"),
-  bounds,
-  {
-    obstacles,
-    expressionIcon: document.querySelector("#resident-pepita-expression"),
-    spawn: { x: bounds.width * 0.4, y: bounds.height * 0.6 }
-  }
-);
+// Every resident is wired up from the same set of DOM ids, derived from its
+// own character.json id (#resident-<id>, #resident-<id>-sprite,
+// #speech-<id>, #resident-<id>-expression) -- so adding the next resident
+// (Tito, a real-art Miguelito, whoever) is one line here instead of a fresh
+// ~15-line copy-pasted block.
+function createResident(config, spawn) {
+  const id = config.id;
+  const resident = new AnimatedResident(
+    config,
+    document.querySelector(`#resident-${id}`),
+    document.querySelector(`#resident-${id}-sprite`),
+    document.querySelector(`#speech-${id}`),
+    bounds,
+    {
+      obstacles,
+      expressionIcon: document.querySelector(`#resident-${id}-expression`),
+      spawn
+    }
+  );
+  village.register(resident);
+  return resident;
+}
 
-const miguelito = new AnimatedResident(
-  miguelitoConfig,
-  document.querySelector("#resident-miguelito"),
-  document.querySelector("#resident-miguelito-sprite"),
-  document.querySelector("#speech-miguelito"),
-  bounds,
-  {
-    obstacles,
-    expressionIcon: document.querySelector("#resident-miguelito-expression"),
-    spawn: { x: bounds.width * 0.65, y: bounds.height * 0.68 }
-  }
-);
-
-const xolo = new AnimatedResident(
-  xoloConfig,
-  document.querySelector("#resident-xolo"),
-  document.querySelector("#resident-xolo-sprite"),
-  document.querySelector("#speech-xolo"),
-  bounds,
-  {
-    obstacles,
-    expressionIcon: document.querySelector("#resident-xolo-expression"),
-    spawn: { x: bounds.width * 0.52, y: bounds.height * 0.78 }
-  }
-);
-
-village.register(pepita);
-village.register(miguelito);
-village.register(xolo);
+const pepita = createResident(pepitaConfig, { x: bounds.width * 0.4, y: bounds.height * 0.6 });
+const miguelito = createResident(miguelitoConfig, { x: bounds.width * 0.65, y: bounds.height * 0.68 });
+const xolo = createResident(xoloConfig, { x: bounds.width * 0.52, y: bounds.height * 0.78 });
 
 new AnimationDebugViewer(document.querySelector("#debug-viewer"), [pepita, miguelito, xolo]);
 
