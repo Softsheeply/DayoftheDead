@@ -181,6 +181,57 @@ dayNightToggleEl.addEventListener("click", () => {
   dayNightToggleEl.setAttribute("aria-label", timeOfDay === "day" ? "Switch to night" : "Switch to day");
 });
 
+// -- Keep navigation/obstacles/interaction points in sync with the actual
+// rendered layout --------------------------------------------------------
+// `bounds` and every obstacle box above were measured once, synchronously,
+// at page load. .village's width is fluid (only height is fixed by CSS),
+// so if the window resizes -- or if this initial measurement simply raced
+// ahead of the browser's final layout pass, which happened during testing
+// -- every resident's navigation would otherwise silently keep using
+// stale dimensions for the rest of the session. Recompute everything
+// derived from villageEl's box whenever it might have changed.
+function recomputeLayout() {
+  const rect = villageEl.getBoundingClientRect();
+  const newBounds = { width: villageEl.clientWidth, height: villageEl.clientHeight };
+  const newHouseBox = localBox(houseEl, rect);
+  const newFountainBox = localBox(fountainEl, rect);
+  const newFlowerBedBox = localBox(flowerBedEl, rect);
+  const newBenchBox = localBox(benchEl, rect);
+  const newCottageBox = localBox(document.querySelector(".cottage"), rect);
+  const newTempleBox = localBox(document.querySelector(".temple"), rect);
+  const newTreeBaseBox = localBox(document.querySelector(".tree-base"), rect);
+  const newPondBox = localBox(document.querySelector(".pond"), rect);
+  const newObstacles = [newHouseBox, newFountainBox, newBenchBox, newCottageBox, newTempleBox, newTreeBaseBox, newPondBox];
+
+  for (const resident of village.residents) {
+    resident.bounds = newBounds;
+    resident.navigation.setBounds(newBounds);
+    resident.navigation.setObstacles(newObstacles);
+  }
+
+  // houseBox/fountainBox/flowerBedBox/benchBox are shared-by-reference with
+  // the drop zone's `box` and each hotspot's `point` (both read live at call
+  // time, not captured once) -- mutate in place rather than reassigning the
+  // const bindings, so those stay correct without any other wiring changes.
+  Object.assign(houseBox, newHouseBox);
+  Object.assign(fountainBox, newFountainBox);
+  Object.assign(flowerBedBox, newFlowerBedBox);
+  Object.assign(benchBox, newBenchBox);
+  Object.assign(fountainPoint, { x: newFountainBox.x + newFountainBox.width * 0.5, y: newFountainBox.y + newFountainBox.height + 20 });
+  Object.assign(flowerBedPoint, { x: newFlowerBedBox.x + newFlowerBedBox.width - 34, y: newFlowerBedBox.y + newFlowerBedBox.height + 22 });
+  Object.assign(benchPoint, { x: newBenchBox.x + newBenchBox.width * 0.5, y: newBenchBox.y + newBenchBox.height + 18 });
+}
+
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(recomputeLayout, 150);
+});
+// Defensive re-check shortly after load: if the very first measurement above
+// raced ahead of the browser's final layout/font/grid settling, this catches
+// it instead of leaving every resident stuck with wrong dimensions all game.
+setTimeout(recomputeLayout, 500);
+
 let previous = performance.now();
 function loop(now) {
   village.update(Math.min(now - previous, 100));
