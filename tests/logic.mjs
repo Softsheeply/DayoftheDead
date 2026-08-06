@@ -18,6 +18,7 @@ import { CharacterAnimationController, AnimationEventDispatcher } from "../src/a
 import { createInteractiveHotspot, createHousingZone } from "../src/hotspots.js";
 import { Village } from "../src/village.js";
 import { AnimatedResident } from "../src/resident.js";
+import { t, getLocale, setLocale, availableLocales, onLocaleChange, applyLocale } from "../src/i18n.js";
 
 // Mirrors resident.js's internal LONG_PRESS_MS (not exported -- it's an
 // implementation detail of the pointer handling, not part of the module's
@@ -862,6 +863,90 @@ test("resident: a pinned resident does not autonomously water flowers or start c
   }
   assert.equal(resident.busy, false, "a pinned resident should not have started any autonomous interaction");
   assert.equal(resident.target, null);
+});
+
+// -- i18n.js ----------------------------------------------------------------
+
+test("i18n: t() interpolates {param} placeholders and falls back to the key itself if unknown", () => {
+  const original = getLocale();
+  try {
+    setLocale("en");
+    assert.equal(t("ui.resident.tap", { name: "Pepita" }), "Tap Pepita");
+    assert.equal(t("this.key.does.not.exist"), "this.key.does.not.exist", "an unknown key should fall back to itself, not throw or return blank");
+  } finally {
+    setLocale(original);
+  }
+});
+
+test("i18n: setLocale switches the active language and t() reflects it immediately", () => {
+  const original = getLocale();
+  try {
+    setLocale("es");
+    assert.equal(getLocale(), "es");
+    assert.equal(t("ui.house.empty"), "Casa vacía");
+    setLocale("en");
+    assert.equal(t("ui.house.empty"), "Empty house");
+  } finally {
+    setLocale(original);
+  }
+});
+
+test("i18n: setLocale is a no-op for an unknown locale", () => {
+  const original = getLocale();
+  try {
+    setLocale("en");
+    setLocale("klingon");
+    assert.equal(getLocale(), "en", "an invalid locale should not change the current one");
+  } finally {
+    setLocale(original);
+  }
+});
+
+test("i18n: availableLocales includes at least en and es", () => {
+  const locales = availableLocales();
+  assert.ok(locales.includes("en"));
+  assert.ok(locales.includes("es"));
+});
+
+test("i18n: onLocaleChange fires listeners on a real change, not on a no-op setLocale", () => {
+  const original = getLocale();
+  try {
+    setLocale("en");
+    const seen = [];
+    const unsubscribe = onLocaleChange(locale => seen.push(locale));
+    try {
+      setLocale("en"); // already "en" -- should not fire
+      assert.deepEqual(seen, []);
+      setLocale("es");
+      assert.deepEqual(seen, ["es"]);
+    } finally {
+      unsubscribe();
+    }
+  } finally {
+    setLocale(original);
+  }
+});
+
+test("i18n: applyLocale updates data-i18n text and data-i18n-aria attributes in a given root", () => {
+  const original = getLocale();
+  try {
+    setLocale("es");
+    // Minimal stand-in for a DOM root: applyLocale only needs querySelectorAll.
+    const heading = { dataset: { i18n: "ui.village.title" }, textContent: "" };
+    const villageDiv = { dataset: { i18nAria: "ui.village.ariaLabel" }, attrs: {}, setAttribute(name, value) { this.attrs[name] = value; } };
+    const root = {
+      querySelectorAll(selector) {
+        if (selector === "[data-i18n]") return [heading];
+        if (selector === "[data-i18n-aria]") return [villageDiv];
+        return [];
+      }
+    };
+    applyLocale(root);
+    assert.equal(heading.textContent, "Pueblo Espíritu");
+    assert.equal(villageDiv.attrs["aria-label"], "Área de prueba del Pueblo Espíritu");
+  } finally {
+    setLocale(original);
+  }
 });
 
 console.log("logic.mjs: all tests defined (node:test will report pass/fail counts below)");

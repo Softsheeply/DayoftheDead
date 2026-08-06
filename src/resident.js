@@ -4,6 +4,7 @@ import { CharacterBehaviourController } from "./behaviour.js";
 import { CharacterNavigationController } from "./navigation.js";
 import { CharacterInteractionController } from "./interaction.js";
 import { CharacterExpressionController } from "./expression.js";
+import { t } from "./i18n.js";
 
 const CONVERSATION_DURATION_MS = 2600;
 const CONVERSATION_STANDOFF = 62;
@@ -121,7 +122,7 @@ export class AnimatedResident extends EventTarget {
     this.behaviour.enabled = !pinned;
     this.element.classList.toggle("pinned", pinned);
     this.expressions.set(pinned ? "sleepy" : "excited", { durationMs: 1400 });
-    this.showSpeech(pinned ? "I'll stay right here." : "Time to wander!");
+    this.showSpeech(t(pinned ? "speech.resident.pinned" : "speech.resident.unpinned"));
   }
 
   beginCarry() {
@@ -183,7 +184,7 @@ export class AnimatedResident extends EventTarget {
     this.setIdle();
     this.renderPosition();
     this.expressions.set("happy");
-    this.showSpeech("¡Afuera!");
+    this.showSpeech(t("speech.resident.released"));
   }
 
   // -- Talking to another resident -----------------------------------------
@@ -239,8 +240,8 @@ export class AnimatedResident extends EventTarget {
     other.animation.play(`talk_${other.direction}`);
     this.expressions.set("happy", { durationMs: CONVERSATION_DURATION_MS - 200 });
     other.expressions.set("happy", { durationMs: CONVERSATION_DURATION_MS - 200 });
-    this.showSpeech(`¡Hola, ${other.config.displayName}!`);
-    other.showSpeech(`¡Hola, ${this.config.displayName}!`);
+    this.showSpeech(t("speech.resident.greet", { name: other.config.displayName }));
+    other.showSpeech(t("speech.resident.greet", { name: this.config.displayName }));
   }
 
   endConversation() {
@@ -351,7 +352,7 @@ export class AnimatedResident extends EventTarget {
       // instead of throwing.
       if (reaction) {
         this.expressions.set("happy");
-        this.showSpeech(`¡Hola! I'm ${this.config.displayName}.`);
+        this.showSpeech(t("speech.resident.greetFallback", { name: this.config.displayName }));
       }
       return;
     }
@@ -365,7 +366,7 @@ export class AnimatedResident extends EventTarget {
     if (reaction) {
       this.element.classList.add("reacting");
       this.expressions.set("happy");
-      this.showSpeech("¡Hola! Flowers make every day brighter.");
+      this.showSpeech(t("speech.resident.greetFlowers"));
     }
   }
 

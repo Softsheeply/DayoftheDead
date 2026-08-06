@@ -81,6 +81,18 @@ By default (`resident.js` `finishAction`), a resident plays `celebrate` and retu
 
 The hold is guarded against being interrupted: if something else takes over mid-hold (tapped, dragged into the house, started a conversation...), a version counter (`resident.actionVersion`, bumped by every state-changing method) means the hold's own timer becomes a no-op when it eventually fires, instead of clobbering whatever took over.
 
+## Localization
+
+`src/i18n.js` is a minimal, framework-free i18n layer: a lookup table per locale (`en`/`es` so far) plus `{param}` interpolation, no build step. Built now, before the roster grows, since retrofitting localization onto hardcoded strings gets more expensive the more content there is.
+
+- **Static HTML text** uses `data-i18n="key"` (sets `textContent`) or `data-i18n-aria="key"` (sets `aria-label`) attributes — see `index.html`'s `<h1>`/description/`#village`. `applyLocale(root)` walks and applies both on load and on every locale change.
+- **Dynamic strings** (speech bubbles, hotspot labels that depend on state, resident tap labels) call `t(key, params)` directly at the point of use. Hotspot `emptyLabel`/`settledLabel`/`occupiedLabel` accept a function instead of a plain string specifically so they re-resolve in the *current* locale every time state changes, rather than being frozen in whatever language was active when the hotspot was registered — `createInteractiveHotspot`'s `resolveLabel` and `createHousingZone`'s `updateIndicator` both check for this.
+- **The locale toggle** (`#locale-toggle`, top-left of the village) cycles through `availableLocales()`. `onLocaleChange` fires a listener on every real change (not on a no-op `setLocale` to the already-active locale), which `app.js` uses to re-run `applyLocale()` plus explicitly refresh the handful of things that got resolved into plain values at startup and need a nudge (hotspot labels via `setState(state)`, the housing zone via `refreshLabel()`, the day/night toggle, resident tap `aria-label`s).
+- **Persists to `localStorage`** (`spiritVillage.locale`) automatically, survives a reload.
+- Light Spanish interjections in the EN text (`¡Hola!`, `¡Afuera!`) are intentional — that's character voice for a Día de los Muertos village, not something that needs "translating away" even in English mode. Everything else is fully translated.
+
+Verified in-browser: clicking the toggle switches the header title/description, every hotspot's `aria-label`, resident tap labels, and a live speech bubble to Spanish instantly with no reload; toggling back and reloading confirms the choice persisted.
+
 ## Day/night toggle
 
 The moon/sun button in the top-right corner of the village toggles `#village`'s `data-time` attribute between `"day"` and `"night"`. Night is currently a CSS filter placeholder (`.village[data-time="night"]` in `src/styles.css` — darkens/cools the whole scene, background and every resident/hotspot alike, since they're all descendants of `.village`) rather than a second background image, since only `village_day.jpg` exists. Swap the filter rule for a real `village_night.jpg` background whenever that art shows up; `app.js`'s toggle wiring doesn't need to change. Purely visual right now — nothing in the simulation (behaviour, interactions) currently reacts to time of day.

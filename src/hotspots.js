@@ -51,10 +51,18 @@ export function createInteractiveHotspot({
 }) {
   let revertTimer = null;
 
+  // emptyLabel/settledLabel may be a plain string or a () => string function.
+  // Callers pass a function backed by i18n's t() so the label re-resolves
+  // in the current locale every time the state changes, instead of being
+  // frozen in whatever language was active when the hotspot was created.
+  function resolveLabel(label) {
+    return typeof label === "function" ? label() : label;
+  }
+
   function setState(state) {
     element.dataset.state = state;
     if (element.setAttribute) {
-      const label = state === toState ? settledLabel : emptyLabel;
+      const label = resolveLabel(state === toState ? settledLabel : emptyLabel);
       if (label) element.setAttribute("aria-label", label);
     }
     clearTimeout(revertTimer);
@@ -128,7 +136,8 @@ export function createHousingZone({ village, box, zoneElement, indicatorElement,
 
   function updateIndicator() {
     indicatorElement?.classList.toggle("on", occupants.size > 0);
-    zoneElement.setAttribute("aria-label", occupants.size > 0 ? occupiedLabel(occupants.size) : emptyLabel);
+    const label = occupants.size > 0 ? occupiedLabel(occupants.size) : (typeof emptyLabel === "function" ? emptyLabel() : emptyLabel);
+    zoneElement.setAttribute("aria-label", label);
   }
 
   village.registerDropZone({
@@ -148,5 +157,5 @@ export function createHousingZone({ village, box, zoneElement, indicatorElement,
   });
 
   updateIndicator();
-  return { occupants };
+  return { occupants, refreshLabel: updateIndicator };
 }

@@ -2,6 +2,7 @@ import { AnimatedResident } from "./resident.js";
 import { AnimationDebugViewer } from "./debug-viewer.js";
 import { Village } from "./village.js";
 import { createInteractiveHotspot, createHousingZone } from "./hotspots.js";
+import { t, applyLocale, getLocale, setLocale, availableLocales, onLocaleChange } from "./i18n.js";
 
 function localBox(el, villageRect) {
   const rect = el.getBoundingClientRect();
@@ -73,13 +74,20 @@ const pepita = createResident(pepitaConfig, { x: bounds.width * 0.4, y: bounds.h
 const miguelito = createResident(miguelitoConfig, { x: bounds.width * 0.65, y: bounds.height * 0.68 });
 const xolo = createResident(xoloConfig, { x: bounds.width * 0.52, y: bounds.height * 0.78 });
 
+function refreshResidentAriaLabels() {
+  for (const resident of [pepita, miguelito, xolo]) {
+    resident.element.setAttribute("aria-label", t("ui.resident.tap", { name: resident.config.displayName }));
+  }
+}
+refreshResidentAriaLabels();
+
 new AnimationDebugViewer(document.querySelector("#debug-viewer"), [pepita, miguelito, xolo]);
 
 // Dev convenience: inspect/drive the live village from the browser console.
 window.__village = { village, pepita, miguelito, xolo };
 
-pepita.events.addEventListener("spawn_petals", () => pepita.showSpeech("Petals!"));
-pepita.events.addEventListener("transfer_flower", () => pepita.showSpeech("A flower for you."));
+pepita.events.addEventListener("spawn_petals", () => pepita.showSpeech(t("speech.fountain.petals")));
+pepita.events.addEventListener("transfer_flower", () => pepita.showSpeech(t("speech.action.giveFlower")));
 
 // Every hotspot below picks whichever eligible resident is nearest when
 // tapped (createInteractiveHotspot's pickResident) -- "eligible" meaning
@@ -91,7 +99,7 @@ pepita.events.addEventListener("transfer_flower", () => pepita.showSpeech("A flo
 const allResidents = [pepita, miguelito, xolo];
 
 // -- Flower bed: dry -> water_flowers -> watered -> dry again after 20s ------
-createInteractiveHotspot({
+const flowerBedHotspot = createInteractiveHotspot({
   id: "flowerBed",
   element: flowerBedEl,
   point: flowerBedPoint,
@@ -102,9 +110,9 @@ createInteractiveHotspot({
   toState: "watered",
   duringState: "watering",
   revertAfterMs: 20000,
-  emptyLabel: "Dry flower bed, tap to water",
-  settledLabel: "Watered flower bed",
-  onSettled: resident => resident.showSpeech("Flowers watered!")
+  emptyLabel: () => t("ui.flowerBed.dry"),
+  settledLabel: () => t("ui.flowerBed.watered"),
+  onSettled: resident => resident.showSpeech(t("speech.flowerBed.watered"))
 });
 
 // -- Bench: empty -> sit (and actually stay seated for 5s) -> empty ----------
@@ -112,7 +120,7 @@ createInteractiveHotspot({
 // for holdMs instead of immediately celebrating and standing back up (see
 // resident.js holdAfterAction). revertAfterMs is a touch longer than holdMs
 // so the bench's glow doesn't clear while they're still visibly sitting there.
-createInteractiveHotspot({
+const benchHotspot = createInteractiveHotspot({
   id: "bench",
   element: benchEl,
   point: benchPoint,
@@ -124,9 +132,9 @@ createInteractiveHotspot({
   postAction: "hold",
   holdMs: 5000,
   revertAfterMs: 5500,
-  emptyLabel: "Empty bench, tap to rest",
-  settledLabel: "Someone is resting",
-  onSettled: resident => resident.showSpeech("Just a moment...")
+  emptyLabel: () => t("ui.bench.empty"),
+  settledLabel: () => t("ui.bench.occupied"),
+  onSettled: resident => resident.showSpeech(t("speech.bench.resting"))
 });
 
 // -- Fountain: toss petals in and make a wish, reusing throw_petals ----------
@@ -134,7 +142,7 @@ createInteractiveHotspot({
 // event marker at frame 4) but had no in-game trigger -- the fountain gives
 // it one, using existing art rather than needing anything new. Uses the
 // default postAction ("celebrate") since a quick wish doesn't need to hold.
-createInteractiveHotspot({
+const fountainHotspot = createInteractiveHotspot({
   id: "fountain",
   element: fountainEl,
   point: fountainPoint,
@@ -144,20 +152,20 @@ createInteractiveHotspot({
   fromState: "still",
   toState: "wished",
   revertAfterMs: 8000,
-  emptyLabel: "Toss petals into the fountain to make a wish",
-  settledLabel: "A wish was just made here",
-  onSettled: resident => resident.showSpeech("I wish for a wonderful day!")
+  emptyLabel: () => t("ui.fountain.still"),
+  settledLabel: () => t("ui.fountain.wished"),
+  onSettled: resident => resident.showSpeech(t("speech.fountain.wish"))
 });
 
 // -- House: drag a resident in, window lights up, tap to release -------------
-createHousingZone({
+const housingZone = createHousingZone({
   village,
   box: houseBox,
   zoneElement: houseEl,
   indicatorElement: document.querySelector("#house-light"),
   releasePoint: () => ({ x: houseBox.x + houseBox.width * 0.5, y: houseBox.y + houseBox.height + 26 }),
-  emptyLabel: "Empty house",
-  occupiedLabel: count => `${count} resident(s) inside, tap to let them out`
+  emptyLabel: () => t("ui.house.empty"),
+  occupiedLabel: count => t("ui.house.occupied", { count })
 });
 
 // -- Day/night toggle ----------------------------------------------------------
@@ -167,12 +175,44 @@ createHousingZone({
 // wiring doesn't need to change either way.
 const dayNightToggleEl = document.querySelector("#day-night-toggle");
 let timeOfDay = villageEl.dataset.time ?? "day";
+function refreshDayNightLabel() {
+  dayNightToggleEl.textContent = timeOfDay === "day" ? "🌙" : "☀️";
+  dayNightToggleEl.setAttribute("aria-label", t(timeOfDay === "day" ? "ui.dayNightToggle.toNight" : "ui.dayNightToggle.toDay"));
+}
 dayNightToggleEl.addEventListener("click", () => {
   timeOfDay = timeOfDay === "day" ? "night" : "day";
   villageEl.dataset.time = timeOfDay;
-  dayNightToggleEl.textContent = timeOfDay === "day" ? "🌙" : "☀️";
-  dayNightToggleEl.setAttribute("aria-label", timeOfDay === "day" ? "Switch to night" : "Switch to day");
+  refreshDayNightLabel();
 });
+refreshDayNightLabel();
+
+// -- Locale toggle ---------------------------------------------------------
+// Cycles through every registered locale (currently en/es). Re-applies
+// every translated string on the page when it changes: static [data-i18n]
+// text via applyLocale, plus the handful of things that were resolved into
+// plain strings/attributes at startup and need an explicit nudge to
+// re-resolve (hotspot labels, the day/night toggle, resident tap labels).
+const localeToggleEl = document.querySelector("#locale-toggle");
+function refreshLocaleToggleLabel() {
+  localeToggleEl.textContent = getLocale().toUpperCase();
+}
+localeToggleEl.addEventListener("click", () => {
+  const locales = availableLocales();
+  const next = locales[(locales.indexOf(getLocale()) + 1) % locales.length];
+  setLocale(next);
+});
+onLocaleChange(() => {
+  applyLocale();
+  refreshLocaleToggleLabel();
+  refreshDayNightLabel();
+  refreshResidentAriaLabels();
+  flowerBedHotspot.setState(flowerBedHotspot.state);
+  benchHotspot.setState(benchHotspot.state);
+  fountainHotspot.setState(fountainHotspot.state);
+  housingZone.refreshLabel();
+});
+applyLocale();
+refreshLocaleToggleLabel();
 
 // -- Keep navigation/obstacles/interaction points in sync with the actual
 // rendered layout --------------------------------------------------------

@@ -18,6 +18,8 @@ h1, h2, p { margin-top: 0; } h1 { margin-bottom: 6px; font-family: Georgia, seri
 .village[data-time="night"] { filter: brightness(.52) saturate(.75) hue-rotate(-6deg) contrast(1.05); }
 .day-night-toggle { position:absolute; top:14px; right:14px; z-index:20; width:44px; height:44px; border-radius:50%; border:2px solid #f6c56f; background:#241246cc; color:#fff8dc; font-size:20px; line-height:1; cursor:pointer; box-shadow:0 6px 16px #08041188; transition:transform .2s; }
 .day-night-toggle:hover { transform:scale(1.08); }
+.locale-toggle { position:absolute; top:14px; right:66px; z-index:20; height:44px; padding:0 14px; border-radius:22px; border:2px solid #f6c56f; background:#241246cc; color:#fff8dc; font-size:14px; font-weight:800; letter-spacing:.04em; cursor:pointer; box-shadow:0 6px 16px #08041188; transition:transform .2s; }
+.locale-toggle:hover { transform:scale(1.05); }
 .moon, .papel { display: none; } /* the background painting already includes a moon and papel picado banners */
 /*
  * All ground-object positions below were calibrated by injecting a live
