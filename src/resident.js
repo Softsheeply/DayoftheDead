@@ -19,6 +19,7 @@ export class AnimatedResident extends EventTarget {
     this.bounds = bounds;
     this.position = options.spawn ?? { x: bounds.width * 0.52, y: bounds.height * 0.62 };
     this.target = null;
+    this.pathQueue = null;
     this.direction = config.defaultDirection;
     this.stateMachine = new CharacterStateMachine();
     this.events = new AnimationEventDispatcher();
@@ -129,6 +130,7 @@ export class AnimatedResident extends EventTarget {
     this.suppressClick = true;
     this.beingCarried = true;
     this.target = null;
+    this.pathQueue = null;
     this.busy = true;
     this.behaviour.postpone(2000);
     this.stateMachine.transition("disabled", { force: true, lock: true });
@@ -165,6 +167,7 @@ export class AnimatedResident extends EventTarget {
     this.housed = true;
     this.busy = true;
     this.target = null;
+    this.pathQueue = null;
     this.stateMachine.transition("disabled", { force: true, lock: true });
     this.element.style.display = "none";
     this.speech.classList.remove("visible");
@@ -212,10 +215,10 @@ export class AnimatedResident extends EventTarget {
     this.conversation = { role: "initiator", other, phase: "approaching" };
     other.conversation = { role: "partner", other: this, phase: "waiting" };
     other.busy = true;
-    this.target = {
+    this.walkTo({
       x: other.position.x - (dx / distance) * CONVERSATION_STANDOFF,
       y: other.position.y - (dy / distance) * CONVERSATION_STANDOFF
-    };
+    });
     this.movementKind = "walk";
     this.busy = true;
     this.stateMachine.transition("walking");
@@ -272,7 +275,7 @@ export class AnimatedResident extends EventTarget {
     const point = this.navigation.randomPoint();
     if (!point) return this.setIdle();
     this.actionVersion += 1;
-    this.target = point;
+    this.walkTo(point);
     this.movementKind = kind;
     this.busy = true;
     this.stateMachine.transition(kind === "skip" ? "skipping" : "walking");
@@ -283,12 +286,21 @@ export class AnimatedResident extends EventTarget {
   beginInteractionApproach(id, object) {
     this.actionVersion += 1;
     this.pendingInteraction = { id, stage: "approaching" };
-    this.target = { ...object.point };
+    this.walkTo(object.point);
     this.movementKind = "walk";
     this.busy = true;
     this.stateMachine.transition("walking");
     this.updateDirection();
     this.animation.play(`walk_${this.direction}`);
+  }
+
+  // Route toward finalPoint via navigation.findApproachPath instead of a raw
+  // straight line, so a walk doesn't visually cut through an obstacle that
+  // happens to sit between the current position and the destination.
+  walkTo(finalPoint) {
+    const path = this.navigation.findApproachPath(this.position, finalPoint);
+    this.target = path[0];
+    this.pathQueue = path.slice(1);
   }
 
   updateDirection() {
@@ -305,6 +317,12 @@ export class AnimatedResident extends EventTarget {
     if (distance < 2) {
       this.position = this.target;
       this.target = null;
+      if (this.pathQueue?.length) {
+        this.target = this.pathQueue.shift();
+        this.updateDirection();
+        this.animation.play(`${this.movementKind}_${this.direction}`);
+        return; // more of this walk left -- don't resolve the interaction/conversation/idle yet
+      }
       if (this.pendingInteraction?.stage === "approaching") {
         this.pendingInteraction.stage = "acting";
         this.interactions.resolve(this.pendingInteraction.id);
@@ -339,6 +357,7 @@ export class AnimatedResident extends EventTarget {
     }
     this.actionVersion += 1;
     this.target = null;
+    this.pathQueue = null;
     this.busy = true;
     if (!interactionId) this.direction = "down";
     this.stateMachine.transition("performingAction", { lock: true });
@@ -390,6 +409,7 @@ export class AnimatedResident extends EventTarget {
 
   setIdle() {
     this.target = null;
+    this.pathQueue = null;
     this.busy = false;
     this.stateMachine.unlock("idle");
     this.animation.play(`idle_${this.direction}`);

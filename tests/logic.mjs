@@ -215,6 +215,96 @@ test("navigation: randomPoint only ever returns walkable points, or null if none
   assert.equal(blockedNav.randomPoint(5), null);
 });
 
+test("navigation: pathIsClear ignores obstacles within endBufferPx of the destination", () => {
+  const bounds = { width: 400, height: 400 };
+  const nav = new CharacterNavigationController(bounds, [], { margin: 0, footPadding: 0 });
+  const from = { x: 0, y: 200 };
+  const to = { x: 20, y: 200 }; // 20px away
+  assert.equal(nav.pathIsClear(from, to, 26), true, "destination closer than endBufferPx should always be clear");
+});
+
+test("navigation: pathIsClear detects an obstacle sitting between two clear points", () => {
+  const bounds = { width: 400, height: 400 };
+  const obstacle = { x: 190, y: 150, width: 20, height: 100 }; // a wall straight across the middle
+  const nav = new CharacterNavigationController(bounds, [obstacle], { margin: 0, footPadding: 0, topRatio: 0, bottomRatio: 1 });
+  assert.equal(nav.pathIsClear({ x: 100, y: 200 }, { x: 300, y: 200 }), false, "a straight line through the wall should not be clear");
+  assert.equal(nav.pathIsClear({ x: 100, y: 200 }, { x: 150, y: 200 }), true, "a line that never reaches the wall should be clear");
+});
+
+test("navigation: findApproachPath returns a direct path when nothing is in the way", () => {
+  const bounds = { width: 400, height: 400 };
+  const nav = new CharacterNavigationController(bounds, [], { margin: 0, footPadding: 0, topRatio: 0, bottomRatio: 1 });
+  const to = { x: 300, y: 200 };
+  assert.deepEqual(nav.findApproachPath({ x: 100, y: 200 }, to), [to], "clear path should be a single-point route to the destination itself");
+});
+
+test("navigation: findApproachPath routes around an obstacle that blocks the direct line", () => {
+  const bounds = { width: 400, height: 400 };
+  const obstacle = { x: 190, y: 100, width: 20, height: 200 }; // a wall spanning the whole vertical band
+  const nav = new CharacterNavigationController(bounds, [obstacle], { margin: 0, footPadding: 0, topRatio: 0, bottomRatio: 1 });
+  const from = { x: 100, y: 200 };
+  const to = { x: 300, y: 200 };
+  const path = nav.findApproachPath(from, to);
+  assert.equal(path.length, 2, "should insert exactly one waypoint to go around the wall");
+  const [waypoint] = path;
+  assert.equal(nav.pathIsClear(from, waypoint, 0), true, "the first leg must actually be clear");
+  assert.equal(nav.pathIsClear(waypoint, to), true, "the second leg must actually be clear");
+  assert.deepEqual(path[1], to, "the route must still end at the real destination");
+});
+
+test("navigation: findApproachPath falls back to the direct line when no detour clears both legs", () => {
+  // An obstacle so wide that none of findApproachPath's fixed lateral offsets escape it.
+  const bounds = { width: 800, height: 800 };
+  const obstacle = { x: 190, y: 0, width: 420, height: 800 };
+  const nav = new CharacterNavigationController(bounds, [obstacle], { margin: 0, footPadding: 0, topRatio: 0, bottomRatio: 1 });
+  const from = { x: 100, y: 400 };
+  const to = { x: 700, y: 400 };
+  assert.deepEqual(nav.findApproachPath(from, to), [to], "should fall back to the direct route rather than getting stuck with no path at all");
+});
+
+test("navigation: findApproachPath solves an L-shaped detour findQuickDetour's single waypoint can't", () => {
+  // A wall with a gap only in one corner -- routing around it needs to bend
+  // twice (down, then across through the gap), which a single lateral
+  // waypoint can't express but grid BFS can.
+  const bounds = { width: 800, height: 800 };
+  const wallWithGapAtBottom = { x: 390, y: 0, width: 20, height: 550 }; // leaves a gap between y=550 and the bottom
+  const nav = new CharacterNavigationController(bounds, [wallWithGapAtBottom], { margin: 0, footPadding: 0, topRatio: 0, bottomRatio: 1 });
+  const from = { x: 100, y: 100 };
+  const to = { x: 700, y: 100 };
+
+  assert.equal(nav.findQuickDetour(from, to, 0), null, "this specific gap shape shouldn't be solvable by a single lateral offset");
+
+  const path = nav.findApproachPath(from, to);
+  assert.ok(path.length > 1, "grid pathfinding should still find a route through the gap");
+  let prev = from;
+  for (let i = 0; i < path.length; i += 1) {
+    assert.equal(nav.pathIsClear(prev, path[i], i === path.length - 1 ? 26 : 0), true, `leg ${i} of the resulting path must actually be clear`);
+    prev = path[i];
+  }
+});
+
+test("navigation: findGridPath does not let a diagonal step cut through a blocked corner", () => {
+  const bounds = { width: 200, height: 200 };
+  // Two obstacles positioned so a diagonal move between their shared corner
+  // would clip both of them, even though the two diagonal endpoint cells
+  // are themselves individually walkable.
+  const obstacles = [
+    { x: 100, y: 60, width: 40, height: 40 },
+    { x: 60, y: 100, width: 40, height: 40 }
+  ];
+  const nav = new CharacterNavigationController(bounds, obstacles, { margin: 0, footPadding: 0, topRatio: 0, bottomRatio: 1 });
+  const path = nav.findGridPath({ x: 70, y: 70 }, { x: 130, y: 130 });
+  if (!path) return; // no path at all is an acceptable outcome for this tight synthetic case
+  let prev = { x: 70, y: 70 };
+  for (const point of path) {
+    // Every consecutive pair in a corner-safe path should be walkable along
+    // the straight line between them (cheap proxy: both endpoints walkable
+    // and pathIsClear with no end buffer).
+    assert.equal(nav.pathIsClear(prev, point, 0), true, "no leg of the grid path should cut through a blocked corner");
+    prev = point;
+  }
+});
+
 // -- CharacterInteractionController --------------------------------------------
 
 test("interaction: request only proceeds when available, and drives the resident's approach", () => {
@@ -558,6 +648,40 @@ test("resident: updateMovement advances position toward the target and arrives c
   assert.deepEqual(resident.position, { x: 100, y: 0 });
   assert.equal(resident.target, null, "target should clear once arrival is detected");
   assert.equal(resident.busy, false);
+});
+
+test("resident: walkTo routes through queued waypoints before resolving the final arrival", () => {
+  const resident = makeResident({}, { width: 400, height: 400 }, { spawn: { x: 0, y: 0 } });
+  // A wall the direct line to (200, 0) would cross; findApproachPath should insert a waypoint.
+  resident.navigation = new CharacterNavigationController(
+    { width: 400, height: 400 },
+    [{ x: 90, y: -50, width: 20, height: 100 }],
+    { margin: 0, footPadding: 0, topRatio: 0, bottomRatio: 1 }
+  );
+  resident.movementKind = "walk";
+  resident.walkTo({ x: 200, y: 0 });
+
+  assert.ok(resident.pathQueue.length >= 1, "an obstructed walk should queue at least one waypoint");
+  const waypoint = resident.target;
+  assert.notDeepEqual(waypoint, { x: 200, y: 0 }, "should head to the waypoint first, not straight to the final point");
+
+  // Walk to the (queued) waypoint -- arriving there should advance to the next
+  // leg of the path instead of finishing the walk.
+  resident.busy = true;
+  const dx = waypoint.x, dy = waypoint.y; // from (0,0)
+  const distance = Math.hypot(dx, dy);
+  resident.updateMovement((distance / 100) * 1000 + 50); // walkSpeed 100/s, overshoot slightly
+  resident.updateMovement(16); // detect arrival at the waypoint
+  assert.equal(resident.busy, true, "should still be walking -- only reached an intermediate waypoint");
+  assert.deepEqual(resident.target, { x: 200, y: 0 }, "should now be heading to the real final destination");
+  assert.equal(resident.pathQueue.length, 0);
+});
+
+test("resident: walkTo goes straight to the destination when nothing obstructs it (unchanged common case)", () => {
+  const resident = makeResident({}, { width: 400, height: 400 }, { spawn: { x: 0, y: 0 } });
+  resident.walkTo({ x: 150, y: 0 });
+  assert.deepEqual(resident.target, { x: 150, y: 0 });
+  assert.deepEqual(resident.pathQueue, []);
 });
 
 test("resident: postAction 'hold' keeps the resident in place, then returns to idle after holdMs", () => {
