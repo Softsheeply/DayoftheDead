@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spirit Village — Pepita Animation Lab</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="game-column">
+        <header>
+          <p class="eyebrow">Dead of the Dead · Phase 1</p>
+          <h1 data-i18n="ui.village.title">Spirit Village</h1>
+          <p data-i18n="ui.village.description">Pepita, Miguelito, and Xolo are testing the multi-resident village. Tap anyone to say hello, drag one into the house, or wait and watch them run into each other.</p>
+        </header>
+        <div id="village" class="village" data-time="day" data-i18n-aria="ui.village.ariaLabel" aria-label="Spirit Village test area">
+          <button id="locale-toggle" class="locale-toggle" aria-label="Change language">EN</button>
+          <button id="day-night-toggle" class="day-night-toggle" aria-label="Switch to night">🌙</button>
+          <div class="moon"></div>
+          <div class="papel papel-one"></div><div class="papel papel-two"></div><div class="papel papel-three"></div>
+          <div class="house" aria-label="Empty house"><span>Floristería</span></div>
+          <span id="house-light" class="house-light"></span>
+          <div class="cottage"></div>
+          <div class="temple"></div>
+          <div class="tree-base"></div>
+          <div class="pond"></div>
+          <button id="flower-bed" class="flower-bed" data-state="dry" aria-label="Dry flower bed, tap to water"></button>
+          <button id="bench" class="bench" data-state="empty" aria-label="Empty bench, tap to rest"></button>
+          <button id="fountain" class="fountain" data-state="still" aria-label="Toss petals into the fountain to make a wish"></button>
+          <button id="resident-pepita" class="resident" aria-label="Tap Pepita">
+            <img id="resident-pepita-sprite" alt="Pepita sprite" draggable="false" />
+            <span id="resident-pepita-expression" class="expression-icon"></span>
+          </button>
+          <div id="speech-pepita" class="speech" role="status"></div>
+          <button id="resident-miguelito" class="resident" aria-label="Tap Miguelito">
+            <img id="resident-miguelito-sprite" alt="Miguelito placeholder sprite" draggable="false" />
+            <span id="resident-miguelito-expression" class="expression-icon"></span>
+          </button>
+          <div id="speech-miguelito" class="speech" role="status"></div>
+          <button id="resident-xolo" class="resident resident-pet" aria-label="Tap Xolo">
+            <img id="resident-xolo-sprite" alt="Xolo sprite" draggable="false" />
+            <span id="resident-xolo-expression" class="expression-icon"></span>
+          </button>
+          <div id="speech-xolo" class="speech" role="status"></div>
+        </div>
+      </section>
+      <aside id="debug-viewer" class="debug-panel"></aside>
+    </main>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

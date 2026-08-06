@@ -1,0 +1,8 @@
+{
+  "id": "dona-luz",
+  "displayName": "Doña Luz",
+  "role": "candle keeper",
+  "kind": "humanoid",
+  "status": "planned",
+  "note": "Reuses Pepita's Phase 1 animation/state/behaviour/navigation/interaction controllers. Fits the lantern+night interaction (friendly spirits visit)."
+}

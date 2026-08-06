@@ -1,0 +1,94 @@
+# Dead of the Dead — Spirit Village
+
+A living Día de los Muertos village, Pocket-God-inspired but **friendly and for kids**: things are always happening whether or not the player touches anything, and interactions are rewarding and delightful rather than mean-spirited or chaotic. Poking the world should make a kid smile, not wince.
+
+Concept reference: `docs/concept-art/gameplay-overview.jpg`
+
+## Roster
+
+Pepita, Miguelito (placeholder art), and Xolo (partial real art) are implemented and in the live village (see `assets/characters/`, `src/`). Everyone else below has a `character.json` stub under `assets/characters/<slug>/` marked `"status": "planned"` — the folder and id exist so future work has a home, but there's no art or animation manifest yet.
+
+| Name | Role | Kind | Slug |
+| --- | --- | --- | --- |
+| Pepita | florist | humanoid | `pepita` — **implemented**, mostly real art |
+| Miguelito | mischievous kid | humanoid | `miguelito` — **implemented**, placeholder art |
+| Xolo | loyal dog | pet | `xolo` — **implemented**, real `walk_left`/`walk_right` and all four `idle` poses; `walk_down`/`walk_up` still placeholder |
+| Abuela Rosa | always baking | humanoid | `abuela-rosa` |
+| Tito | mariachi | humanoid | `tito` |
+| Pinto | painter | humanoid | `pinto` |
+| Don Mateo | carpenter | humanoid | `don-mateo` |
+| Doña Luz | candle keeper | humanoid | `dona-luz` |
+| Señor Curevo | clever crow | pet (flighted) | `senor-curevo` |
+| Gato | curious cat | pet | `gato` |
+
+Humanoid residents are meant to reuse Pepita's controllers (`CharacterAnimationController`, `CharacterStateMachine`, `CharacterBehaviourController`, `CharacterNavigationController`, `CharacterInteractionController`, `CharacterExpressionController`) by supplying their own sprite set and `character.json`. Pets turned out to need the same thing, not a separate lighter rig as originally assumed here — Xolo proved the existing controllers handle a lower/wider quadruped silhouette fine; the only real requirement is that a resident's `character.json` only lists animations it actually has art for (missing ones degrade gracefully rather than crashing). A flighted pet like Señor Curevo will still likely need real perching/flying states whenever that gets built, since "walk" doesn't cover flight.
+
+## World interactions (target list, not yet built)
+
+These are the "poke the world, something delightful happens" moments from the concept — the standard every future interaction should be held to (positive outcome, no punishing the player for tapping something):
+
+- **Firework + Mariachi** → huge street festival
+- **Dog + Bone** (Xolo) → digs up hidden treasure
+- **Crow + Hat** (Señor Curevo) → steals it and flies off (playful, not malicious)
+- **Rain + Marigolds** → flowers bloom everywhere
+- **Lantern + Night** → friendly spirits visit
+- **Chocolate + Abuela Rosa** → everyone comes for a party
+
+Pepita's flower-bed watering loop was the first real implementation of this pattern (dry → interact → reward → celebrate); the bench and fountain (make-a-wish, `throw_petals`) followed using the generalized `src/hotspots.js` factories. None of these are from the original target list above yet -- those all need new art/characters first (Xolo for dog+bone, Señor Curevo for crow+hat, etc.) -- but they're proof the underlying pattern is solid and cheap to repeat once that art exists.
+
+## Decorations (target list)
+
+Folders exist under `assets/decorations/<name>/` (currently empty, `.gitkeep`-tracked) for: candle, flower-pot, bench, fountain, lantern, archway. These are ambient/placeable world objects, distinct from character sprites.
+
+## UI (target list)
+
+`assets/ui/icons/` is scaffolded for the HUD shown in the concept: currency (marigold-skull coin, flower currency), a heart/affection meter, and icon buttons for inventory, journal/book, pets, camera, and settings.
+
+## Backgrounds
+
+- `assets/backgrounds/village_day.jpg` — implemented, used as the live `.village` background in `index.html`/`src/styles.css`.
+- Village night and graveyard scenes are referenced in the concept art but not yet added as separate background assets.
+
+## Roadmap
+
+1. ~~Pepita Phase 1: reusable animation foundation~~ — done
+2. Pepita Phase 2: real artwork for every Pepita animation (in progress — `walk_down` and all four `idle` directions are real art; skip/talk/dance/expressions/actions are still placeholder)
+3. ~~Multi-resident framework + resident-to-resident talking~~ — done, proved with Miguelito (placeholder art) talking to Pepita autonomously via `src/village.js`
+4. Give Miguelito real artwork, then Tito (unlocks the firework+mariachi festival interaction from the target list below) — ready-to-paste prompts for both in [`docs/ART_WISHLIST.md`](ART_WISHLIST.md)
+5. ~~Carry/drag system~~ — done: drag any idle resident onto the house to house them (they disappear, the house's window lights up), tap the house to release. Proved with Miguelito; works for anyone, not pet-specific, so Xolo can use the same mechanism once his art exists.
+6. ~~Generalize the stateful-hotspot pattern~~ — done: `src/hotspots.js` has `createInteractiveHotspot` (flower bed, bench, fountain) and `createHousingZone` (house). ~~Real "linger while seated" behaviour for the bench~~ also done: `finishAction` now supports a configurable `postAction: "hold"` instead of always celebrating, guarded against interruption via an `actionVersion` counter -- Pepita genuinely stays seated for 5s now. Still open: more objects using the same factories (other buildings, a door)
+7. ~~First pet rig (Xolo)~~ — turned out not to need a separate rig at all: the existing humanoid controllers work fine for a pet silhouette. Xolo is in the village now with real, verified `walk_left`/`walk_right` art and real static idle poses in all four directions, and can be carried/housed/tapped like anyone else. Still needed: real `walk_down`/`walk_up` walking gaits (currently reusing the left-facing walk frames as a placeholder stand-in -- his front/back art so far is static idle only) and the dog+bone interaction itself
+8. Decorations and UI icon sets
+9. ~~Keep residents on the path, not through buildings/the tree/the pond~~ — done: obstacle hitboxes now exist for every solid painted object (florist stall, cottage, temple, tree base, pond, fountain, bench), all calibrated against the actual rendered `.village` via a live percentage grid (not the source JPG -- `background-size: cover` crops it against a very different aspect ratio, so source percentages were misleading). Fixed pre-existing misalignment on the fountain/bench/house boxes at the same time. Verified with 500 sampled `navigation.randomPoint()` calls landing zero times inside any obstacle.
+10. ~~Route walks around obstacles instead of cutting straight through them~~ — done: every walk (wandering, interaction approach, conversation standoff) now goes through `navigation.findApproachPath` (direct line if clear -> cheap single-waypoint detour -> real grid-BFS pathfinding with corner-cutting disallowed -> direct-line fallback only if all else fails). See the README's "Pathfinding" section for the full breakdown. Found and fixed a real bug along the way: `margin` was a fixed 76px regardless of viewport width, which could fragment the walkable area into disconnected pockets on a narrow viewport -- now scales with `bounds.width`.
+11. ~~Fix stale bounds-on-resize~~ — done: `app.js` now has `recomputeLayout()`, wired to a debounced `window.resize` listener plus a defensive one-off re-check 500ms after load (to catch the "measured before layout settled" case that caused the confusing test results in #10 above). Updates every resident's `navigation.bounds`/`obstacles` and mutates the shared `houseBox`/`fountainBox`/`flowerBedBox`/`benchBox` and interaction-point objects in place, so the housing zone and all three hotspots stay correct too without any changes on their end. Verified live: resizing the preview viewport from 483px to 814px wide correctly updated `navigation.bounds`, an obstacle box, and the fountain's interaction point; a bench interaction still completed successfully afterward.
+12. ~~Refactor `app.js` resident creation into a factory~~ — done, see README's architecture list. Prep work before Tito (or a real-art Miguelito) makes it a 4th near-identical block.
+13. ~~Generalize the 3 hotspots to any resident~~ — done, see README's "Interactive objects" section. Still practically Pepita-only until another resident has matching action animations.
+14. ~~Build EN/ES localization infrastructure~~ — done, see README's "Localization" section. Every player-facing string now goes through `src/i18n.js`, not hardcoded.
+
+## Product roadmap: tech demo to shippable game
+
+The items above are all *systems* work on top of a 1-location, 3-resident tech demo. Zoomed out, here's the actual gap to a real, shippable, bilingual mobile game, phased the way an indie dev would sequence it -- foundations before more content, since retrofitting things like localization or a save system after the roster/world grows is much more expensive than building them in now:
+
+- **Phase 1 -- finish the vertical slice + foundations** (in progress): real player-facing UI/HUD (currently just a dev debug panel), save/load persistence (currently everything resets on refresh), ~~localization infrastructure~~ (done), basic audio (currently silent), Pepita to 100% real art.
+- **Phase 2 -- roster rollout**: character-by-character using the now-proven art pipeline (design pose -> confirm -> side-view walk -> static front/back), ordered by which new *interaction* each one unlocks (Tito -> festival, Xolo -> dog+bone, Señor Curevo -> crow+hat, Doña Luz -> lantern+night).
+- **Phase 3 -- world expansion**: real night background art (swap out the current CSS-filter placeholder), a second location (graveyard -- needs the "multiple maps" structural work from the parked ideas above), more hotspots using the existing factory.
+- **Phase 4 -- economy & progression**: currency/hearts (the UI mockup already exists in the concept art, `docs/concept-art/gameplay-overview.jpg`), unlockables, return-player hooks.
+- **Phase 5 -- ship**: platform packaging, performance pass, EN/ES store listings.
+
+**Platform**: target is mobile (iOS/Android). Recommendation is to wrap the existing web codebase with **Capacitor** (thin native shell around a webview) rather than a full rewrite in a different stack (e.g. Flutter, to match the other Softsheeply apps) -- Capacitor preserves the entire engine (animation/state/behaviour/navigation/interaction/hotspot/i18n) built so far; a rewrite would mean starting all of it over. Not yet finalized with the user, but nothing in Phase 1 depends on which way this goes -- UI/save/localization/audio all transfer to a Capacitor wrap unchanged.
+
+## Parked ideas (not scheduled, just don't want to lose them)
+
+1. ~~**Day/night toggle**~~ — done, mechanism-wise: tap the moon/sun button (top-right of the village) to switch `#village`'s `data-time` between "day"/"night". Night is currently a CSS filter placeholder (darken/cool-tint the whole scene, `.village[data-time="night"]` in `src/styles.css`) rather than real night art, since `assets/backgrounds/village_day.jpg` is all that exists. Swap the filter for a real `village_night.jpg` background whenever that art shows up -- the toggle wiring in `src/app.js` doesn't need to change either way. Purely visual for now, no gameplay tied to time of day yet (e.g. residents don't sleep at night).
+2. ~~**Per-character idle/free-move toggle**~~ — done: long-press (~550ms, no movement) any resident to pin/unpin them, distinct from a tap (wave) or a drag (carry). Player-facing version of the debug viewer's existing `resident.behaviour.enabled` switch. See README's "Pinning a resident in place".
+3. ~~**Tap a building to interact with it** — turn on a light, open a door, etc.~~ — partially done: dragging a resident onto the house turns its window light on/off (`src/village.js` drop zones + `#house-light`). Still to do: interactions that don't require carrying something (e.g. tap the house directly to trigger something), and other buildings besides the house.
+4. **Wider/zoomed-out map** — current `.village` viewport is fixed at 650px tall; revisit once there are enough residents/objects that the space feels crowded.
+5. **Multiple maps, move characters between them** — e.g. village → graveyard → spirit realm, carrying a resident along. Bigger structural change: `Village` would need to track which map each resident is on, and there'd need to be a per-map background + obstacle set instead of the single hardcoded one in `app.js` today.
+6. **Lots more interactive objects generally** — reinforces #3/#6 above; the flower-bed interaction chain (`src/interaction.js`) is the template to repeat for whatever gets added.
+
+## Known bad art attempts (don't reuse)
+
+- **Xolo, first attempt** — ChatGPT generated a moss/rock totem-creature completely unrelated to the alebrije spirit-dog brief (teal-black glowing patterns, red bat ears, one big glowing eye per side). Discarded, not saved to the repo.
+- **Xolo, front-facing walk cycle attempt** — design was correct this time (matched the confirmed reference), but all 8 frames were the same standing pose with no real leg movement — verified by cropping and comparing frames directly, not just eyeballing. Not usable as a *walk cycle*, but not wasted either: since all frames were identical anyway, one frame got reused later as the real static `idle_down` pose once that's what was actually needed. Takeaway: a straight-on front view is a genuinely hard angle for these models to convey quadruped walking motion in (legs mostly swing side-to-side from that angle, so the per-frame difference is small and easy for the model to flatten away) -- but that same flatness is exactly fine for a static idle pose. The side-view walk request worked on the first try — see `assets/characters/xolo/walk/left/`.
+- **Xolo, 3/4-angle walk cycle attempt** — asked for a 3/4 down-angle walk (to get clearer leg motion than straight-on front without going full side view). Result was a complete style/subject drift: a photographed-looking clay/vinyl figurine, wrong colors, none of Xolo's markings -- not even the same rendering style as every other successful sheet (flat 2D illustration). Discarded, not saved to the repo. Takeaway: `walk_down`/`walk_up` are being left as the temporary left-facing-art stand-in indefinitely for now rather than continuing to spend generation attempts on them -- three attempts (frozen front pose, then two full derailments) is enough to call this angle unreliable for this character. Revisit later, possibly with a different tool or a much more constrained style-lock in the prompt.

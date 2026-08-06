@@ -1,0 +1,8 @@
+{
+  "id": "senor-curevo",
+  "displayName": "Señor Curevo",
+  "role": "clever crow",
+  "kind": "pet",
+  "status": "planned",
+  "note": "Flighted pet — will need a flying/perching rig distinct from the humanoid and ground-pet controllers. Fits the crow+hat interaction (steals it and flies off)."
+}
