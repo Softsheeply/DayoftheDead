@@ -22,12 +22,12 @@ export class CharacterInteractionController {
     const object = this.objects.get(id);
     if (!object) return;
     this.resident.direction = object.facing ?? this.resident.direction;
-    object.onStart?.();
+    object.onStart?.(this.resident);
     this.resident.playAction(object.action, { reaction: false, interactionId: id });
   }
 
   complete(id) {
     const object = this.objects.get(id);
-    object?.onComplete?.();
+    object?.onComplete?.(this.resident);
   }
 }

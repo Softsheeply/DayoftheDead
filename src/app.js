@@ -81,6 +81,15 @@ window.__village = { village, pepita, miguelito, xolo };
 pepita.events.addEventListener("spawn_petals", () => pepita.showSpeech("Petals!"));
 pepita.events.addEventListener("transfer_flower", () => pepita.showSpeech("A flower for you."));
 
+// Every hotspot below picks whichever eligible resident is nearest when
+// tapped (createInteractiveHotspot's pickResident) -- "eligible" meaning
+// free AND actually has the action's animation. Today that still means
+// only Pepita in practice (she's the only one with water_flowers/sit/
+// throw_petals), but the system itself is no longer hardcoded to her --
+// Miguelito/Xolo become candidates automatically the moment they have
+// matching action animations, no app.js changes needed.
+const allResidents = [pepita, miguelito, xolo];
+
 // -- Flower bed: dry -> water_flowers -> watered -> dry again after 20s ------
 createInteractiveHotspot({
   id: "flowerBed",
@@ -88,36 +97,36 @@ createInteractiveHotspot({
   point: flowerBedPoint,
   facing: "down",
   action: "water_flowers",
-  resident: pepita,
+  residents: allResidents,
   fromState: "dry",
   toState: "watered",
   duringState: "watering",
   revertAfterMs: 20000,
   emptyLabel: "Dry flower bed, tap to water",
   settledLabel: "Watered flower bed",
-  onSettled: () => pepita.showSpeech("Flowers watered!")
+  onSettled: resident => resident.showSpeech("Flowers watered!")
 });
 
 // -- Bench: empty -> sit (and actually stay seated for 5s) -> empty ----------
-// postAction: "hold" keeps Pepita in the sit animation's final pose for
-// holdMs instead of immediately celebrating and standing back up (see
+// postAction: "hold" keeps the resident in the sit animation's final pose
+// for holdMs instead of immediately celebrating and standing back up (see
 // resident.js holdAfterAction). revertAfterMs is a touch longer than holdMs
-// so the bench's glow doesn't clear while she's still visibly sitting there.
+// so the bench's glow doesn't clear while they're still visibly sitting there.
 createInteractiveHotspot({
   id: "bench",
   element: benchEl,
   point: benchPoint,
   facing: "down",
   action: "sit",
-  resident: pepita,
+  residents: allResidents,
   fromState: "empty",
   toState: "occupied",
   postAction: "hold",
   holdMs: 5000,
   revertAfterMs: 5500,
   emptyLabel: "Empty bench, tap to rest",
-  settledLabel: "Pepita is resting",
-  onSettled: () => pepita.showSpeech("Just a moment...")
+  settledLabel: "Someone is resting",
+  onSettled: resident => resident.showSpeech("Just a moment...")
 });
 
 // -- Fountain: toss petals in and make a wish, reusing throw_petals ----------
@@ -131,13 +140,13 @@ createInteractiveHotspot({
   point: fountainPoint,
   facing: "down",
   action: "throw_petals",
-  resident: pepita,
+  residents: allResidents,
   fromState: "still",
   toState: "wished",
   revertAfterMs: 8000,
   emptyLabel: "Toss petals into the fountain to make a wish",
   settledLabel: "A wish was just made here",
-  onSettled: () => pepita.showSpeech("I wish for a wonderful day!")
+  onSettled: resident => resident.showSpeech("I wish for a wonderful day!")
 });
 
 // -- House: drag a resident in, window lights up, tap to release -------------

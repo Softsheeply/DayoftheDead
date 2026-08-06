@@ -8,14 +8,23 @@
  */
 
 /**
- * A world object that one resident interacts with: tap it (or the resident
- * notices it autonomously elsewhere) -> resident walks to a point near it,
- * faces it, plays an action animation -> object's state flips -> optionally
- * reverts back to its starting state after a delay.
+ * A world object that any eligible resident can interact with: tap it (or a
+ * resident notices it autonomously elsewhere) -> the nearest eligible idle
+ * resident walks to a point near it, faces it, plays an action animation ->
+ * object's state flips -> optionally reverts back to its starting state
+ * after a delay.
  *
  * This is the flower-bed pattern (dry -> water_flowers -> watered -> dry
  * again after 20s), generalized so the next object like it (a door, a
  * bench, a shrine) is just a config object away.
+ *
+ * "Eligible" means: not busy/mid-conversation/housed/being-carried/pinned,
+ * AND actually has the requested action animation (or `${action}_down`,
+ * matching playAction's own fallback) -- a resident without the animation
+ * would otherwise walk all the way over, have playAction silently no-op
+ * (its own graceful-fallback-for-missing-animation behaviour), and leave
+ * the interaction permanently stuck mid-"acting" since nothing would ever
+ * fire the animation-complete event that finishes it.
  *
  * By default, once the action animation finishes the resident plays
  * "celebrate" and returns to idle (resident.js finishAction's default).
@@ -29,7 +38,7 @@ export function createInteractiveHotspot({
   point,
   facing = "down",
   action,
-  resident,
+  residents,
   fromState,
   toState,
   duringState = null,
@@ -56,7 +65,30 @@ export function createInteractiveHotspot({
 
   setState(fromState);
 
-  resident.interactions.register(id, {
+  function hasAction(resident) {
+    const config = resident.config.animations;
+    return Boolean(config[action] ?? config[`${action}_down`]);
+  }
+
+  function isFree(resident) {
+    return !resident.busy && !resident.conversation && !resident.housed && !resident.beingCarried && !resident.pinned;
+  }
+
+  function pickResident() {
+    let best = null;
+    let bestDistance = Infinity;
+    for (const resident of residents) {
+      if (!hasAction(resident) || !isFree(resident)) continue;
+      const distance = Math.hypot(resident.position.x - point.x, resident.position.y - point.y);
+      if (distance < bestDistance) {
+        best = resident;
+        bestDistance = distance;
+      }
+    }
+    return best;
+  }
+
+  const objectConfig = {
     point,
     facing,
     action,
@@ -64,17 +96,22 @@ export function createInteractiveHotspot({
     holdMs,
     isAvailable: () => element.dataset.state === fromState,
     onStart: duringState ? () => { element.dataset.state = duringState; } : undefined,
-    onComplete: () => {
+    onComplete: actingResident => {
       setState(toState);
-      onSettled?.();
+      onSettled?.(actingResident);
     }
-  });
+  };
+  for (const resident of residents) resident.interactions.register(id, objectConfig);
 
-  element.addEventListener("click", () => resident.interactions.request(id));
+  element.addEventListener("click", () => {
+    const resident = pickResident();
+    return resident ? resident.interactions.request(id) : false;
+  });
 
   return {
     get state() { return element.dataset.state; },
-    setState
+    setState,
+    pickResident
   };
 }
 

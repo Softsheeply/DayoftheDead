@@ -405,13 +405,34 @@ test("animation: render() builds the sprite path from the character's own id, no
 
 // -- hotspots.js ----------------------------------------------------------------
 
+// A stub resident with just enough surface for hotspots.js: an
+// interactions controller, the fields pickResident's eligibility check
+// reads (config.animations, busy/conversation/housed/beingCarried/pinned),
+// and a position for the nearest-resident distance calculation.
+function makeHotspotResidentStub({ position = { x: 0, y: 0 }, animations = { sit: {} }, playAction, beginInteractionApproach } = {}) {
+  const played = [];
+  const inner = {
+    direction: "down",
+    position,
+    busy: false,
+    conversation: null,
+    housed: false,
+    beingCarried: false,
+    pinned: false,
+    config: { animations },
+    playAction: playAction ?? ((a, o) => played.push([a, o])),
+    beginInteractionApproach: beginInteractionApproach ?? (() => {})
+  };
+  inner.interactions = new CharacterInteractionController(inner);
+  inner.played = played;
+  return inner;
+}
+
 test("createInteractiveHotspot: sets initial state and toggles via the full register/resolve/complete chain", () => {
   const element = makeElementStub();
-  const played = [];
-  const innerResident = { direction: "down", playAction: (a, o) => played.push([a, o]), beginInteractionApproach() {} };
-  const resident = { interactions: new CharacterInteractionController(innerResident) };
+  const resident = makeHotspotResidentStub();
   createInteractiveHotspot({
-    id: "bench", element, point: { x: 1, y: 1 }, action: "sit", resident,
+    id: "bench", element, point: { x: 1, y: 1 }, action: "sit", residents: [resident],
     fromState: "empty", toState: "just-used", emptyLabel: "Empty", settledLabel: "Used"
   });
   assert.equal(element.dataset.state, "empty");
@@ -425,13 +446,42 @@ test("createInteractiveHotspot: sets initial state and toggles via the full regi
   assert.equal(element.getAttribute("aria-label"), "Used");
 });
 
+test("createInteractiveHotspot: picks the nearest eligible resident when tapped, skipping busy/ineligible ones", () => {
+  const element = makeElementStub();
+  const near = makeHotspotResidentStub({ position: { x: 10, y: 0 } });
+  const far = makeHotspotResidentStub({ position: { x: 500, y: 0 } });
+  const busy = makeHotspotResidentStub({ position: { x: 5, y: 0 } });
+  busy.busy = true;
+  const noAnimation = makeHotspotResidentStub({ position: { x: 1, y: 0 }, animations: {} }); // closest, but can't sit
+  const point = { x: 0, y: 0 };
+
+  const hotspot = createInteractiveHotspot({
+    id: "bench", element, point, action: "sit", residents: [far, busy, noAnimation, near],
+    fromState: "empty", toState: "occupied"
+  });
+
+  assert.equal(hotspot.pickResident(), near, "should pick the nearest resident that is both free and has the action");
+});
+
+test("createInteractiveHotspot: onSettled receives whichever resident actually completed the interaction", () => {
+  const element = makeElementStub();
+  const resident = makeHotspotResidentStub();
+  const settledWith = [];
+  createInteractiveHotspot({
+    id: "fountain", element, point: { x: 0, y: 0 }, action: "throw_petals", residents: [resident],
+    fromState: "still", toState: "wished", onSettled: r => settledWith.push(r)
+  });
+  resident.interactions.complete("fountain");
+  assert.deepEqual(settledWith, [resident]);
+});
+
 test("createInteractiveHotspot: is unavailable while in its non-initial state, and reverts after a delay", () => {
   mock.timers.enable();
   try {
     const element = makeElementStub();
-    const resident = { interactions: new CharacterInteractionController({ direction: "down", playAction() {} }) };
+    const resident = makeHotspotResidentStub();
     createInteractiveHotspot({
-      id: "bed", element, point: { x: 0, y: 0 }, action: "water", resident,
+      id: "bed", element, point: { x: 0, y: 0 }, action: "water", residents: [resident],
       fromState: "dry", toState: "watered", revertAfterMs: 1000
     });
 
@@ -439,7 +489,7 @@ test("createInteractiveHotspot: is unavailable while in its non-initial state, a
     // isAvailable is gated on the object's own onComplete having run via resolve/complete;
     // exercise it directly through the registered object instead:
     const obj = resident.interactions.objects.get("bed");
-    obj.onComplete();
+    obj.onComplete(resident);
     assert.equal(element.dataset.state, "watered");
     assert.equal(obj.isAvailable(), false, "should not be available while settled");
 
@@ -455,9 +505,9 @@ test("createInteractiveHotspot: is unavailable while in its non-initial state, a
 
 test("createInteractiveHotspot: duringState is applied on onStart, e.g. the flower bed's 'watering' pulse", () => {
   const element = makeElementStub();
-  const resident = { interactions: new CharacterInteractionController({ direction: "down", playAction() {} }) };
+  const resident = makeHotspotResidentStub();
   createInteractiveHotspot({
-    id: "bed", element, point: { x: 0, y: 0 }, action: "water", resident,
+    id: "bed", element, point: { x: 0, y: 0 }, action: "water", residents: [resident],
     fromState: "dry", toState: "watered", duringState: "watering"
   });
   const obj = resident.interactions.objects.get("bed");
